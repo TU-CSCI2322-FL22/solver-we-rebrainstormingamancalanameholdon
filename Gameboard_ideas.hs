@@ -26,3 +26,4 @@ checkEnd board =
         aux lst = 
             let nonEmpties = [x | x <- lst, x /= []]
             in nonEmpties != []
+    in aux holes1 || aux holes2
