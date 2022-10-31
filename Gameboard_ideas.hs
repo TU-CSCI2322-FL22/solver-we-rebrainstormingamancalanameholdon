@@ -16,4 +16,13 @@ Holes2 Holes
 type Store = Int
 type Holes = [Int]
 --type Move = undefined
+type End = Bool
+--type Turn = Bool
+-- data Turn = Player1 | Player2 | Endgame
 
+checkEnd :: Board -> Bool
+checkEnd board = 
+    let
+        aux lst = 
+            let nonEmpties = [x | x <- lst, x /= []]
+            in nonEmpties != []
