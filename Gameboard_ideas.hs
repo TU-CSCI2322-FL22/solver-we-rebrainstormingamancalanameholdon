@@ -1,8 +1,11 @@
 import Debug.Trace
 import Data.Maybe
-import Data.Record
+--import Data.Record
 
-data Board = undefined
+data Board = Board  {store1 :: Int
+                    , holes1 :: [Int]
+                    , store2 :: Int
+                    , holes2 :: Int} deriving Show
 {-
 Store1 Store 
 Holes1 Holes 
@@ -12,3 +15,5 @@ Holes2 Holes
 
 type Store = Int
 type Holes = [Int]
+--type Move = undefined
+
