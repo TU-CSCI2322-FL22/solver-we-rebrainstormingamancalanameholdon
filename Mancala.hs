@@ -9,9 +9,9 @@ type Hole = (Int, Int)
 --
 
 data Board = Board { store1 :: Store,
-                     holes1 :: [Hole],
+                     holes :: [Hole],
                      store2 :: Store,
-                     holes2 :: [Hole] } deriving Show
+                    } deriving (Show) 
 
 data Player = Player1 | Player2 deriving Show -- NOTE: GameOver may ultimately be unnecessary
 
