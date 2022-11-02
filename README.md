@@ -1,5 +1,5 @@
 we'rebrainstormingamancalanameholdon
-Mechele
+Michelle Lee
 Daveed
 Germy
 Leann
