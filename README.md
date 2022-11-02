@@ -1,5 +1,5 @@
 we'rebrainstormingamancalanameholdon
-we are making the data types
+we are making the data types and game states
 Michelle
 Jeremiah
 David
