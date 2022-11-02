@@ -12,7 +12,6 @@ data Board = Board { store1 :: Store,
                      holes :: [Hole],
                      store2 :: Store,
                     } deriving (Show) 
-
 data Player = Player1 | Player2 deriving Show -- NOTE: GameOver may ultimately be unnecessary
 
 data Outcome = Win Player | Tie | NotOver deriving Show
@@ -25,16 +24,6 @@ type Move = Int -- NOTE: this alias is currently subject to change
 
 -- Helper Variables
 --
-
--- validHoleNums is a list of all the possible integer values that can be associated with a given hole.
--- validHoleNums should be used when checking if a move is valid.
-validHoleNums :: [Int]
-validHoleNums = [1..6] -- may want to have 1..12 instead
-
--- startBoard is a Board that should look exactly like a Mancala board does at the start of a new
--- game.
-startBoard :: Board
-startBoard = undefined
 
 -- startState is a State, and should be the very first state that a player sees at the beginning of
 -- a new game. 
@@ -49,6 +38,8 @@ startState = undefined
 -- isValid is a function that should determine if the desired move is valid.
 -- For a move to be valid, the chosen hole number must be a valid hole number. If the hole number is
 -- valid, we must then ensure that the hole contains at least one bead to move.
+-- If the current player is Player1, they must choose a hole number from 1-6. If the current player
+-- is Player2, they must choose a hole number from 7-12.
 -- If you feel the need to change the type signature, please do so... but LET THE GROUP KNOW FIRST
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
 isValid :: Move -> GameState -> Bool
