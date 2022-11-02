@@ -13,12 +13,14 @@ data Board = Board { store1 :: Store,
                      store2 :: Store,
                      holes2 :: [Hole] } deriving Show
 
-data Turn = Player1 | Player2 | GameOver deriving Show -- NOTE: GameOver may ultimately be unnecessary
+data Player = Player1 | Player2 deriving Show -- NOTE: GameOver may ultimately be unnecessary
+
+data Outcome = Win Player | Tie | NotOver deriving Show
 
 -- Gamestate and Gameplay (i.e., Move, ...) Aliases
 --
 
-type GameState = (Turn, Board)
+type GameState = (Player, Board)
 type Move = Int -- NOTE: this alias is currently subject to change
 
 -- Helper Variables
@@ -27,7 +29,7 @@ type Move = Int -- NOTE: this alias is currently subject to change
 -- validHoleNums is a list of all the possible integer values that can be associated with a given hole.
 -- validHoleNums should be used when checking if a move is valid.
 validHoleNums :: [Int]
-validHoleNums = [1..6]
+validHoleNums = [1..6] -- may want to have 1..12 instead
 
 -- startBoard is a Board that should look exactly like a Mancala board does at the start of a new
 -- game.
@@ -52,6 +54,9 @@ startState = undefined
 isValid :: Move -> GameState -> Bool
 isValid = undefined
 
+validMoves :: GameState -> [Move]
+validMoves = undefined
+
 -- isOver is a function that should determine if the game has ended. For a game to be over, the
 -- holes on one side of the board (or the other) should have NO BEANS in them. I recommend that you
 -- use the higher-order function all in your implementation. 
@@ -64,7 +69,7 @@ isOver = undefined
 -- and return a game state with the appropriate changes to the board / turn having been made.
 -- If you feel the need to change the type signature, please do so... but LET THE GROUP KNOW FIRST
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
-makeMove :: Move -> GameState -> GameState
+makeMove :: Move -> GameState -> Maybe GameState
 makeMove = undefined
 
 -- getWinner is a function that should take in a board or game state and use that board or game
@@ -72,9 +77,8 @@ makeMove = undefined
 -- over. There is no type signature for this function yet, but it should look something like the
 -- commented out signatures below.
 
--- getWinner :: Board -> Turn
--- getWinner :: GameState -> Turn
--- getWinner = undefined
+getWinner :: GameState -> Outcome
+getWinner = undefined
 
 -- showGame is a function that should take a game state and return somethat that will show all the information that a user
 -- might want to see in a legible way (i.e., a list of strings with the current turn, the number of
@@ -83,7 +87,7 @@ makeMove = undefined
 -- If you feel the need to change the type signature, please do so... but LET THE GROUP KNOW FIRST
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
 
-showGame :: GameState -> [String]
+showGame :: GameState -> String
 showGame = undefined
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
@@ -94,3 +98,4 @@ showGame = undefined
 -- What will happen if there is a draw?
 -- What will happen if a move is invalid?
 -- Others...?
+-- STEALS
