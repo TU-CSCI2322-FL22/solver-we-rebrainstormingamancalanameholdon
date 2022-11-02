@@ -14,17 +14,24 @@ Holes2 Holes
 -}
 
 type Store = Int
-type Hole = (Int, [Int])
+type Hole = (Int, Int)
 --type Move = undefined
 type End = Bool
 --type Turn = Bool
--- data Turn = Player1 | Player2 | Endgame
+data Turn = Player1 | Player2 | GameOver
 
--- checkEnd :: Board -> Bool -- Check if the game is over
--- checkEnd board = 
---     let
---         aux lst = 
---             let nonEmpties = [x | x <- lst, x /= []]
---             in nonEmpties /= []
---     in aux holes1 || aux holes2
+type GameState = (Turn, Board)
+--startState = 
 
+-- validHoles
+
+--checkEnd :: Board -> Bool -- Check if the game is over
+
+-- isValidMove 
+
+-- move :: GameState -> GameState
+
+-- winner :: GameState -> 
+
+
+-- instance Show GameState where
