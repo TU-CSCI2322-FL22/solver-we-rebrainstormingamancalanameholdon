@@ -3,15 +3,16 @@
 --
 
 type Store = Int
-type Hole = (Int, Int)
+type Hole = (Int, Int) -- (hole #, # of beans)
 
 -- Board and Game State Algebraic Data Types
 --
 
 data Board = Board { store1 :: Store,
-                     holes :: [Hole],
+                     holes1 :: [Hole],
                      store2 :: Store,
-                    } deriving (Show) 
+                     holes2 :: [Hole] } deriving (Show) 
+                    
 data Player = Player1 | Player2 deriving Show -- NOTE: GameOver may ultimately be unnecessary
 
 data Outcome = Win Player | Tie | NotOver deriving Show
@@ -30,7 +31,7 @@ type Move = Int -- NOTE: this alias is currently subject to change
 -- Once startBoard is defined, startState should be defined as (Player1, startBoard).
 -- If the combination of startBoard and startState is confusing, we can change it later.
 startState :: GameState
-startState = undefined
+startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8,4),(9,4),(10,4),(11,4),(12,4)])
 
 -- Function Stubs
 --
