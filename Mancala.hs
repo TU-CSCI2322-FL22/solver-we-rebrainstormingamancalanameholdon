@@ -43,9 +43,13 @@ startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8
 -- is Player2, they must choose a hole number from 7-12.
 -- If you feel the need to change the type signature, please do so... but LET THE GROUP KNOW FIRST
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
+
+-- Jeremy and David:
 isValid :: Move -> GameState -> Bool
 isValid = undefined
 
+
+-- Jeremy and David:
 validMoves :: GameState -> [Move]
 validMoves = undefined
 
@@ -54,6 +58,8 @@ validMoves = undefined
 -- use the higher-order function all in your implementation. 
 -- If you feel the need to change the type signature, please do so... but LET THE GROUP KNOW FIRST
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
+
+-- Leanna and Michelle:
 isOver :: Board -> Bool
 isOver = undefined
 
@@ -61,6 +67,8 @@ isOver = undefined
 -- and return a game state with the appropriate changes to the board / turn having been made.
 -- If you feel the need to change the type signature, please do so... but LET THE GROUP KNOW FIRST
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
+
+-- Leanna and Michelle:
 makeMove :: Move -> GameState -> Maybe GameState
 makeMove = undefined
 
@@ -69,6 +77,7 @@ makeMove = undefined
 -- over. There is no type signature for this function yet, but it should look something like the
 -- commented out signatures below.
 
+-- Leanna and Michelle:
 getWinner :: GameState -> Outcome
 getWinner = undefined
 
@@ -79,6 +88,8 @@ getWinner = undefined
 -- If you feel the need to change the type signature, please do so... but LET THE GROUP KNOW FIRST
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
 
+
+-- Jeremy and David:
 showGame :: GameState -> String
 showGame = undefined
 
