@@ -103,9 +103,11 @@ showGame state@(turn, board) =
         h2 = holes2 board
         holesToStr :: [Hole] -> String -> String
         holesToStr [] acc = acc
-        holesToStr [x] acc = ((show (snd x)) ++ " " ++ acc)
-        holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ " " ++ acc)
-    in "1 2 3 4 5 6\n" ++ (show s1) ++ " | " ++ (reverse (holesToStr h1 [])) ++ "\n" ++ (show s2) ++ " | " ++ (holesToStr h2 []) ++ "\n" ++ "12 11 10 9 8 7\n"
+        holesToStr [x] acc = ((show (snd x)) ++ "  " ++ acc)
+        holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ "  " ++ acc)
+        newH1 = "     1  2  3  4  5  6\n" ++ (show s1) ++ " |" ++ (reverse (holesToStr h1 []))
+        newH2 = (holesToStr h2 []) ++ "| " ++ (show s2) ++ "\n" ++ "     12 11 10 9  8  7\n"
+    in concat [newH1, "\n     ", newH2]
  
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
