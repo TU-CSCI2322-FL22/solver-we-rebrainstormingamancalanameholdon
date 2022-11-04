@@ -46,7 +46,7 @@ startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8
 
 -- Jeremy and David:
 isValid :: Move -> GameState -> Bool
-isValid move state@(turn, board) = 
+isValid move state = 
     let
         moves = validMoves state
     in move `elem` moves 
@@ -55,7 +55,10 @@ isValid move state@(turn, board) =
 
 -- Jeremy and David:
 validMoves :: GameState -> [Move]
-validMoves state@(turn, board) = case turn of Player1 -> [1..6]; Player2 -> [7..12]
+validMoves state@(turn, board) = 
+    let
+        moves = case turn of Player1 -> (holes1 board); Player2 -> (holes2 board)
+    in [fst x | x <- moves, (snd x) /= 0]
 
 -- isOver is a function that should determine if the game has ended. For a game to be over, the
 -- holes on one side of the board (or the other) should have NO BEANS in them. I recommend that you
