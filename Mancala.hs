@@ -60,8 +60,11 @@ validMoves = undefined
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
 
 -- Leanna and Michelle:
+emptyHoles :: [Hole] -> Bool
+emptyHoles holes = all (\(loc,beans) -> beans == 0) holes
+
 isOver :: Board -> Bool
-isOver = undefined
+isOver board = emptyHoles (holes1 board) || emptyHoles (holes2 board)
 
 -- makeMove is a function that should take in some representation of a move and current game state
 -- and return a game state with the appropriate changes to the board / turn having been made.
