@@ -55,7 +55,7 @@ isValid move state@(turn, board) =
 
 -- Jeremy and David:
 validMoves :: GameState -> [Move]
-validMoves state@(turn, board) = if turn == Player1 then [1..6] else [7..12]
+validMoves state@(turn, board) = case turn of Player1 -> [1..6]; Player2 -> [7..12]
 
 -- isOver is a function that should determine if the game has ended. For a game to be over, the
 -- holes on one side of the board (or the other) should have NO BEANS in them. I recommend that you
@@ -97,8 +97,16 @@ getWinner = undefined
 showGame :: GameState -> String
 showGame state@(turn, board) = 
     let
-        
-    in 
+        s1 = store1 board
+        s2 = store2 board
+        h1 = holes1 board
+        h2 = holes2 board
+        holesToStr :: [Hole] -> String -> String
+        holesToStr [] acc = acc
+        holesToStr [x] acc = ((show (snd x)) ++ " " ++ acc)
+        holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ " " ++ acc)
+    in "1 2 3 4 5 6\n" ++ (show s1) ++ " | " ++ (reverse (holesToStr h1 [])) ++ "\n" ++ (show s2) ++ " | " ++ (holesToStr h2 []) ++ "\n" ++ "12 11 10 9 8 7\n"
+ 
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
 -- possible errors or edge cases. We will likely need to use Maybe and Either. Note that this WILL
