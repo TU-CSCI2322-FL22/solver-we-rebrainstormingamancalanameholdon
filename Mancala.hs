@@ -46,12 +46,16 @@ startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8
 
 -- Jeremy and David:
 isValid :: Move -> GameState -> Bool
-isValid = undefined
+isValid move state@(turn, board) = 
+    let
+        moves = validMoves state
+    in move `elem` moves 
+        
 
 
 -- Jeremy and David:
 validMoves :: GameState -> [Move]
-validMoves = undefined
+validMoves state@(turn, board) = if turn == Player1 then [1..6] else [7..12]
 
 -- isOver is a function that should determine if the game has ended. For a game to be over, the
 -- holes on one side of the board (or the other) should have NO BEANS in them. I recommend that you
@@ -91,7 +95,10 @@ getWinner = undefined
 
 -- Jeremy and David:
 showGame :: GameState -> String
-showGame = undefined
+showGame state@(turn, board) = 
+    let
+        
+    in 
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
 -- possible errors or edge cases. We will likely need to use Maybe and Either. Note that this WILL
