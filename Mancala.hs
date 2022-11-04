@@ -46,12 +46,24 @@ startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8
 
 -- Jeremy and David:
 isValid :: Move -> GameState -> Bool
-isValid = undefined
+isValid move state = 
+    let
+        moves = validMoves state
+    in move `elem` moves 
+        
 
+{- validMoves takes a GameState and returns a list of moves.
+    If the player cannot choose the hole because it is not on their side, it is an invalid move--exclude it from the list.
+    If the hole is empty, it is an invalid move--exclude it from the list.
+    Return the list of moves that have at least 1 stone and are on the player's side.
+-}
 
 -- Jeremy and David:
 validMoves :: GameState -> [Move]
-validMoves = undefined
+validMoves state@(turn, board) = 
+    let
+        moves = case turn of Player1 -> (holes1 board); Player2 -> (holes2 board)
+    in [fst x | x <- moves, (snd x) /= 0]
 
 -- isOver is a function that should determine if the game has ended. For a game to be over, the
 -- holes on one side of the board (or the other) should have NO BEANS in them. I recommend that you
@@ -91,7 +103,20 @@ getWinner = undefined
 
 -- Jeremy and David:
 showGame :: GameState -> String
-showGame = undefined
+showGame state@(turn, board) = 
+    let
+        s1 = store1 board
+        s2 = store2 board
+        h1 = holes1 board
+        h2 = holes2 board
+        holesToStr :: [Hole] -> String -> String
+        holesToStr [] acc = acc
+        holesToStr [x] acc = ((show (snd x)) ++ "  " ++ acc)
+        holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ "  " ++ acc)
+        newH1 = "     1  2  3  4  5  6\n" ++ (show s1) ++ " |" ++ (reverse (holesToStr h1 []))
+        newH2 = (holesToStr h2 []) ++ "| " ++ (show s2) ++ "\n" ++ "     12 11 10 9  8  7\n"
+    in concat [newH1, "\n     ", newH2]
+ 
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
 -- possible errors or edge cases. We will likely need to use Maybe and Either. Note that this WILL
