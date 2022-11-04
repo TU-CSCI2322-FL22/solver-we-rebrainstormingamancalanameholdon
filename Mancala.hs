@@ -52,6 +52,11 @@ isValid move state =
     in move `elem` moves 
         
 
+{- validMoves takes a GameState and returns a list of moves.
+    If the player cannot choose the hole because it is not on their side, it is an invalid move--exclude it from the list.
+    If the hole is empty, it is an invalid move--exclude it from the list.
+    Return the list of moves that have at least 1 stone and are on the player's side.
+-}
 
 -- Jeremy and David:
 validMoves :: GameState -> [Move]
