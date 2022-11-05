@@ -1,3 +1,4 @@
+import Data.List
 
 -- Board Representation Aliases
 --
@@ -13,7 +14,7 @@ data Board = Board { store1 :: Store,
                      store2 :: Store,
                      holes2 :: [Hole] } deriving (Show) 
                     
-data Player = Player1 | Player2 deriving Show -- NOTE: GameOver may ultimately be unnecessary
+data Player = Player1 | Player2 deriving (Show, Eq) -- NOTE: GameOver may ultimately be unnecessary
 
 data Outcome = Win Player | Tie | NotOver deriving Show
 
@@ -84,8 +85,40 @@ isOver board = emptyHoles (holes1 board) || emptyHoles (holes2 board)
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
 
 -- Leanna and Michelle:
+
+{-
+moveBeans :: [Hole] -> Board -> Board
+moveBeans ((chosen,beans):nextHoles) board = 
+  let updatedChosen = (chosen, 0)
+      
+
+function :: Move -> Board -> Int -> Board
+function move board beans = 
+  let splitHoles = partition (<move) (if move < 7 then holes1 board else holes2 board)
+      nextHoles = snd splitHoles
+  in       
+-}
+
 makeMove :: Move -> GameState -> Maybe GameState
-makeMove = undefined
+makeMove move (player, board) =
+   let h1 = holes1 board
+       h2 = holes2 board
+       validHoles = if player == Player1 then h1 else h2
+       (prevHoles,(chosen:nextHoles)) = partition (\(loc,beans) -> loc < move) validHoles
+       newChosen = (fst chosen, 0)
+       held = snd chosen
+       (takeHoles,noTakeHoles) = partition (\(loc,beans) -> loc <= move + held) nextHoles
+       updateHoles = [(loc, beans+1) | (loc, beans) <- takeHoles]
+       newHoles = prevHoles ++ [newChosen] ++ updateHoles ++ noTakeHoles
+   in if isValid move (player,board) 
+      then Just (if player == Player1
+                 then (Player2, Board 0 newHoles 0 h2)
+                 else (Player1, Board 0 h1 0 newHoles))
+      else Just (player,board)
+-- if the move is not valid, don't make the move, i.e. return the original game state but keep the same player
+-- we're thinking about changing the type of makeMove so it returns a GameState, not a Maybe GameState; need to ask Fogarty
+
+-- idea for case where we need to add to store and maybe keep going: if (snd chosen) > (length takeHoles) then add to store else don't add to store
 
 -- getWinner is a function that should take in a board or game state and use that board or game
 -- state to determine the winner of the game. This function should only be successfully called after a game is
@@ -114,11 +147,16 @@ showGame state@(turn, board) =
         h2 = holes2 board
         holesToStr :: [Hole] -> String -> String
         holesToStr [] acc = acc
-        holesToStr [x] acc = ((show (snd x)) ++ "  " ++ acc)
-        holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ "  " ++ acc)
-        newH1 = "     1  2  3  4  5  6\n" ++ (show s1) ++ " |" ++ (reverse (holesToStr h1 []))
-        newH2 = (holesToStr h2 []) ++ "| " ++ (show s2) ++ "\n" ++ "     12 11 10 9  8  7\n"
-    in concat [newH1, "\n     ", newH2]
+        holesToStr [x] acc = (acc ++ "  " ++ (show (snd x)))
+--holesToStr [x] acc = ((show (snd x)) ++ "  " ++ acc)
+        holesToStr holes@(x:xs) acc = holesToStr xs (acc ++ "  " ++ (show (snd x)))
+--holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ "  " ++ acc)
+        newH2 = "    12 11 10 9  8  7\n" ++ (show s2) ++ " | " ++ (reverse (holesToStr h2 []))
+        newH1 = (holesToStr h1 []) ++ " | " ++ (show s1) ++ "\n" ++ "    1  2  3  4  5  6"
+    in concat [newH2, "\n  ", newH1]
+--        newH1 = "     1  2  3  4  5  6\n" ++ (show s1) ++ " |" ++ (reverse (holesToStr h1 []))
+--        newH2 = (holesToStr h2 []) ++ "| " ++ (show s2) ++ "\n" ++ "     12 11 10 9  8  7\n"
+--    in concat [newH1, "\n     ", newH2]
  
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
