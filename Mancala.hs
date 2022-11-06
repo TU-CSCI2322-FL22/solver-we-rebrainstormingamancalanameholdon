@@ -93,8 +93,12 @@ makeMove = undefined
 -- commented out signatures below.
 
 -- Leanna and Michelle:
-getWinner :: GameState -> Outcome
-getWinner = undefined
+getOutcome :: GameState -> Outcome
+getOutcome (player, board)
+    | not (isOver board) = NotOver
+    | store1 board == store2 board = Tie
+    | store1 board > store2 board = Win Player1
+    | store1 board < store2 board = Win Player2
 
 -- showGame is a function that should take a game state and return somethat that will show all the information that a user
 -- might want to see in a legible way (i.e., a list of strings with the current turn, the number of
