@@ -131,13 +131,13 @@ dropInSide start held holes =
 droppedInEmpty :: Move -> Int -> [Hole] -> Bool
 droppedInEmpty move held holes = 
     let moveIndex = if move<7 then move else move-6
-        (leftOf1,((loc,beans):rightOf)) = traceShowId $ splitAt (moveIndex+held-2) holes
+        (leftOf1,((loc,beans):rightOf)) = splitAt (moveIndex+held-2) holes
     in  beans == 1
 
 checkOppHole :: Move -> Int -> [Hole] -> Bool
 checkOppHole move held holes = 
     let moveIndex = if move<7 then move else move-6
-        (leftOf2,((loc,beans):rightOf)) = traceShowId $ splitAt (5-(moveIndex+held-2)) holes
+        (leftOf2,((loc,beans):rightOf)) = splitAt (5-(moveIndex+held-2)) holes
     in  beans /= 0
 
 dropBeans :: Move -> Int -> GameState -> GameState
@@ -196,25 +196,14 @@ getWinner = undefined
 
 -- Jeremy and David:
 showGame :: GameState -> String
-showGame state@(turn, board) = 
-    let
-        s1 = store1 board
-        s2 = store2 board
-        h1 = holes1 board
-        h2 = holes2 board
-        holesToStr :: [Hole] -> String -> String
+showGame state@(turn, Board s1 h1 s2 h2) = 
+    let holesToStr :: [Hole] -> String -> String
         holesToStr [] acc = acc
         holesToStr [x] acc = (acc ++ "  " ++ (show (snd x)))
---holesToStr [x] acc = ((show (snd x)) ++ "  " ++ acc)
         holesToStr holes@(x:xs) acc = holesToStr xs (acc ++ "  " ++ (show (snd x)))
---holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ "  " ++ acc)
         newH2 = "    12 11 10 9  8  7\n" ++ (show s2) ++ " | " ++ (reverse (holesToStr h2 []))
         newH1 = (holesToStr h1 []) ++ " | " ++ (show s1) ++ "\n" ++ "    1  2  3  4  5  6"
     in concat [newH2, "\n  ", newH1]
---        newH1 = "     1  2  3  4  5  6\n" ++ (show s1) ++ " |" ++ (reverse (holesToStr h1 []))
---        newH2 = (holesToStr h2 []) ++ "| " ++ (show s2) ++ "\n" ++ "     12 11 10 9  8  7\n"
---    in concat [newH1, "\n     ", newH2]
- 
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
 -- possible errors or edge cases. We will likely need to use Maybe and Either. Note that this WILL
