@@ -134,6 +134,7 @@ makeMove move (player, board) =
                  then (Player2, snd (moveBeans (move + 1) held (player, Board s1 newHoles s2 h2)))
                  else (Player1, snd (moveBeans (move + 1) held (player, Board s1 h1 s2 newHoles))))
       else Just (player,board)
+
 -- if the move is not valid, don't make the move, i.e. return the original game state but keep the same player
 -- we're thinking about changing the type of makeMove so it returns a GameState, not a Maybe GameState; need to ask Fogarty
 
