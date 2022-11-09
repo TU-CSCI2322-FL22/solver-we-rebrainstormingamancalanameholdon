@@ -87,96 +87,72 @@ isOver board = emptyHoles (holes1 board) || emptyHoles (holes2 board)
 
 -- Leanna and Michelle:
 
-{-
-moveBeans :: [Hole] -> Board -> Board
-moveBeans ((chosen,beans):nextHoles) board = 
-  let updatedChosen = (chosen, 0)
-      
+getPlayerSide :: GameState -> ([Hole],Store)
+getPlayerSide (player, Board s1 h1 s2 h2) = if player == Player1 then (h1,s1) else (h2,s2)
 
-function :: Move -> Board -> Int -> Board
-function move board beans = 
-  let splitHoles = partition (<move) (if move < 7 then holes1 board else holes2 board)
-      nextHoles = snd splitHoles
-  in       
--}
+getOppSide :: GameState -> ([Hole],Store)
+getOppSide (player, Board s1 h1 s2 h2) = if player == Player2 then (h1,s1) else (h2,s2)
 
-moveBeans :: Move -> Int -> GameState -> GameState
-moveBeans move 0 (player, board) = (player, board)
-moveBeans move held (player, Board s1 h1 s2 h2) = 
-   let validHoles = if move >= 7 then h2 else h1
-       (prevHoles,nextHoles) = partition (\(loc,beans) -> loc < move) validHoles
-       (takeHoles,noTakeHoles) = partition (\(loc,beans) -> loc < (move + held)) nextHoles
-       updateHoles = [(loc,beans+1) | (loc,beans) <- takeHoles]
-       newHoles = prevHoles ++ updateHoles ++ noTakeHoles
-   in  if held > (length takeHoles)
-       then if validHoles == h1
-            then if player == Player1
-                 then moveBeans 7 (held-(length takeHoles)-1) (player,Board (s1+1) newHoles s2 h2)
-                 else moveBeans 7 (held-(length takeHoles)) (player,Board s1 newHoles s2 h2)
-            else if player == Player2
-                 then moveBeans 1 (held-(length takeHoles)-1) (player,Board s1 h1 (s2+1) newHoles)
-                 else moveBeans 1 (held-(length takeHoles)) (player,Board s1 h1 s2 newHoles)
-       else if validHoles == h1
-            then if player == Player1
-                 then (Player2, Board s1 newHoles s2 h2)
-                 else (Player1, Board s1 newHoles s2 h2)
-            else if player == Player1
-                 then (Player2, Board s1 h1 s2 newHoles)
-                 else (Player1, Board s1 h1 s2 newHoles)
-        
+updatePlayerSide :: GameState -> [Hole] -> GameState
+updatePlayerSide (player, Board s1 h1 s2 h2) holes 
+    | player == Player1 = (player, Board s1 holes s2 h2)
+    | player == Player2 = (player, Board s1 h1 s2 holes)
+
+updatePlayerStore :: GameState -> Store -> GameState
+updatePlayerStore (player, Board s1 h1 s2 h2) store = if player == Player1
+                                                      then (player, Board store h1 s2 h2)
+                                                      else (player, Board s1 h1 store h2)
+
+updateOppSide :: GameState -> [Hole] -> GameState
+updateOppSide (player, Board s1 h1 s2 h2) holes
+    | player == Player2 = (player, Board s1 holes s2 h2)
+    | player == Player1 = (player, Board s1 h1 s2 holes)
+
+switchTurn :: GameState -> GameState
+switchTurn (player, board) = if player == Player1 then (Player2, board) else (Player1, board)
+
+-- takes move and gamestate and returns the number of held beans and the updated gamestate (set move to 0)
+takeBeans :: Move -> GameState -> (Int, GameState)
+takeBeans move gamestate@(player, Board s1 h1 s2 h2) = 
+    let (leftOf,((loc,held):rightOf)) = if move < 7
+                                        then splitAt (move-1) h1
+                                        else splitAt (move-7) h2
+        newChosen = (loc, 0)
+        newHoles = leftOf ++ [newChosen] ++ rightOf
+    in  (held, updatePlayerSide gamestate newHoles) 
+
+dropInSide :: Move -> Int -> [Hole] -> (Int,[Hole])
+dropInSide start held holes =
+    let (leftOf, rightOf) = splitAt (start-1) holes
+        (dropIn, noDropIn) = (take held rightOf, drop held rightOf)
+    in  (held-(length dropIn), leftOf ++ [(loc,beans+1) | (loc,beans) <- dropIn] ++ noDropIn)
+
+dropBeans :: Move -> Int -> GameState -> GameState
+dropBeans move held gamestate@(player, Board s1 h1 s2 h2) = 
+    let (holes, store) = getPlayerSide gamestate
+        (leftOver, newSide) = dropInSide move held holes
+        newGameState = updatePlayerSide gamestate newSide
+    in  case leftOver of 
+        0 -> switchTurn newGameState
+        1 -> updatePlayerStore newGameState (store+1)
+        x -> let newNewGameState = updatePlayerStore newGameState (store+1) 
+             in giveBeans (leftOver-1) newNewGameState
+
+giveBeans :: Int -> GameState -> GameState
+giveBeans held gamestate@(player, Board s1 h1 s2 h2) = 
+    let (holes, store) = getOppSide gamestate
+        (leftOver, newSide) = dropInSide 1 held holes
+        newGameState = updateOppSide gamestate newSide
+    in  case leftOver of
+        0 -> switchTurn newGameState
+        x -> dropBeans 1 leftOver newGameState
 
 makeMove :: Move -> GameState -> Maybe GameState
-makeMove move gamestate@(player, Board s1 h1 s2 h2) =
-   let validHoles = if player == Player1 then h1 else h2
-       (prevHoles,(chosen:nextHoles)) = partition (\(loc,beans) -> loc < move) validHoles
-       newChosen = (fst chosen, 0)
-       held = snd chosen
-       newHoles = prevHoles ++ [newChosen] ++ nextHoles
-   in if isValid move gamestate
-      then Just (if move < 7
-                 then moveBeans (move+1) held (player, Board s1 newHoles s2 h2)
-                 else moveBeans (move+1) held (player, Board s1 h1 s2 newHoles))
-      else Just gamestate
-
-moveBeans2 :: Move -> Int -> Bool ->  GameState -> GameState
--- if the number of beans held is zero after adding one to the store, then return (same player,
--- updated board)
-moveBeans2 move 0 isFirst (player, board) = (player, board)
-moveBeans2 move held isFirst (player, Board s1 h1 s2 h2) =
-    let validHoles = if move >= 7 then h2 else h1
-        (prevHoles,(chosen:nextHoles)) = partition (\(loc,beans) -> loc < move) validHoles
-        updateChosen = (fst chosen, if isFirst then 0 else snd chosen)
-        (takeHoles,noTakeHoles) = partition (\(loc,beans) -> loc <=  move + held) nextHoles -- <=
-        updateHoles = [(loc,beans+1) | (loc,beans) <- takeHoles]
-        newHoles = prevHoles ++ [updateChosen] ++ updateHoles ++ noTakeHoles
-    in  if held > (length takeHoles)
-        then if validHoles == h1
-             then if player == Player1
-                  then moveBeans2 7 (held-(length takeHoles)-1) False (player,Board (s1+1) newHoles s2 h2)
-                  else moveBeans2 7 (held-(length takeHoles)) False (player,Board s1 newHoles s2 h2)
-             else if player == Player2
-                  then moveBeans2 1 (held-(length takeHoles)-1) False (player,Board s1 h1 (s2+1) newHoles)
-                  else moveBeans2 1 (held-(length takeHoles)) False (player,Board s1 h1 s2 newHoles)
-        else if validHoles == h1
-             then if player == Player1
-                  then (Player2, Board s1 newHoles s2 h2)
-                  else (Player1, Board s1 newHoles s2 h2)
-             else if player == Player1
-                  then (Player2, Board s1 h1 s2 newHoles)
-                  else (Player1, Board s1 h1 s2 newHoles)
-        
-makeMove2 :: Move -> GameState -> GameState
-makeMove2 move gamestate@(player, Board s1 h1 s2 h2) =
-    let validHoles = if move >= 7 then h2 else h1
-        held = head [ beans | (loc,beans) <- validHoles, loc == move ]
-    in  if isValid move gamestate 
-        then moveBeans2 move held True gamestate
-        else gamestate
-
--- if the move is not valid, don't make the move, i.e. return the original game state but keep the same player
--- we're thinking about changing the type of makeMove so it returns a GameState, not a Maybe GameState; need to ask Fogarty
-
--- idea for case where we need to add to store and maybe keep going: if (snd chosen) > (length takeHoles) then add to store else don't add to store
+makeMove move gamestate@(player, Board s1 h1 s2 h2)
+    | isValid move gamestate = 
+          let (held, newGameState) = takeBeans move gamestate
+          in  Just (dropBeans (move+1) held newGameState)
+    | otherwise = Nothing
 
 -- getWinner is a function that should take in a board or game state and use that board or game
 -- state to determine the winner of the game. This function should only be successfully called after a game is
