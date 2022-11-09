@@ -102,38 +102,76 @@ function move board beans =
 
 moveBeans :: Move -> Int -> GameState -> GameState
 moveBeans move 0 (player, board) = (player, board)
-moveBeans move held (player, board) = 
-   let h1 = holes1 board
-       h2 = holes2 board
-       s1 = store1 board
-       s2 = store2 board
-       validHoles = if move >= 7 then h2 else h1
+moveBeans move held (player, Board s1 h1 s2 h2) = 
+   let validHoles = if move >= 7 then h2 else h1
        (prevHoles,nextHoles) = partition (\(loc,beans) -> loc < move) validHoles
        (takeHoles,noTakeHoles) = partition (\(loc,beans) -> loc < (move + held)) nextHoles
        updateHoles = [(loc,beans+1) | (loc,beans) <- takeHoles]
-   in if held > (length takeHoles)
-      then moveBeans (if move >= 7 then 1 else 7) (held - (length takeHoles) - 1) (player,(if player == Player1 then Board (s1+1) (prevHoles ++ updateHoles) s2 h2 else Board s1 h1 (s2+1) (prevHoles ++ updateHoles)))
-      else if move <7
-           then (player,(Board s1 (prevHoles ++ updateHoles ++ noTakeHoles) s2 h2))
-           else (player,(Board s1 h1 s2 (prevHoles ++ updateHoles ++ noTakeHoles)))
-
+       newHoles = prevHoles ++ updateHoles ++ noTakeHoles
+   in  if held > (length takeHoles)
+       then if validHoles == h1
+            then if player == Player1
+                 then moveBeans 7 (held-(length takeHoles)-1) (player,Board (s1+1) newHoles s2 h2)
+                 else moveBeans 7 (held-(length takeHoles)) (player,Board s1 newHoles s2 h2)
+            else if player == Player2
+                 then moveBeans 1 (held-(length takeHoles)-1) (player,Board s1 h1 (s2+1) newHoles)
+                 else moveBeans 1 (held-(length takeHoles)) (player,Board s1 h1 s2 newHoles)
+       else if validHoles == h1
+            then if player == Player1
+                 then (Player2, Board s1 newHoles s2 h2)
+                 else (Player1, Board s1 newHoles s2 h2)
+            else if player == Player1
+                 then (Player2, Board s1 h1 s2 newHoles)
+                 else (Player1, Board s1 h1 s2 newHoles)
+        
 
 makeMove :: Move -> GameState -> Maybe GameState
-makeMove move (player, board) =
-   let h1 = holes1 board
-       h2 = holes2 board
-       s1 = store1 board
-       s2 = store2 board
-       validHoles = if player == Player1 then h1 else h2
+makeMove move gamestate@(player, Board s1 h1 s2 h2) =
+   let validHoles = if player == Player1 then h1 else h2
        (prevHoles,(chosen:nextHoles)) = partition (\(loc,beans) -> loc < move) validHoles
        newChosen = (fst chosen, 0)
        held = snd chosen
        newHoles = prevHoles ++ [newChosen] ++ nextHoles
-   in if isValid move (player,board) 
-      then Just (if player == Player1
-                 then (Player2, snd (moveBeans (move + 1) held (player, Board s1 newHoles s2 h2)))
-                 else (Player1, snd (moveBeans (move + 1) held (player, Board s1 h1 s2 newHoles))))
-      else Just (player,board)
+   in if isValid move gamestate
+      then Just (if move < 7
+                 then moveBeans (move+1) held (player, Board s1 newHoles s2 h2)
+                 else moveBeans (move+1) held (player, Board s1 h1 s2 newHoles))
+      else Just gamestate
+
+moveBeans2 :: Move -> Int -> Bool ->  GameState -> GameState
+-- if the number of beans held is zero after adding one to the store, then return (same player,
+-- updated board)
+moveBeans2 move 0 isFirst (player, board) = (player, board)
+moveBeans2 move held isFirst (player, Board s1 h1 s2 h2) =
+    let validHoles = if move >= 7 then h2 else h1
+        (prevHoles,(chosen:nextHoles)) = partition (\(loc,beans) -> loc < move) validHoles
+        updateChosen = (fst chosen, if isFirst then 0 else snd chosen)
+        (takeHoles,noTakeHoles) = partition (\(loc,beans) -> loc <=  move + held) nextHoles -- <=
+        updateHoles = [(loc,beans+1) | (loc,beans) <- takeHoles]
+        newHoles = prevHoles ++ [updateChosen] ++ updateHoles ++ noTakeHoles
+    in  if held > (length takeHoles)
+        then if validHoles == h1
+             then if player == Player1
+                  then moveBeans2 7 (held-(length takeHoles)-1) False (player,Board (s1+1) newHoles s2 h2)
+                  else moveBeans2 7 (held-(length takeHoles)) False (player,Board s1 newHoles s2 h2)
+             else if player == Player2
+                  then moveBeans2 1 (held-(length takeHoles)-1) False (player,Board s1 h1 (s2+1) newHoles)
+                  else moveBeans2 1 (held-(length takeHoles)) False (player,Board s1 h1 s2 newHoles)
+        else if validHoles == h1
+             then if player == Player1
+                  then (Player2, Board s1 newHoles s2 h2)
+                  else (Player1, Board s1 newHoles s2 h2)
+             else if player == Player1
+                  then (Player2, Board s1 h1 s2 newHoles)
+                  else (Player1, Board s1 h1 s2 newHoles)
+        
+makeMove2 :: Move -> GameState -> GameState
+makeMove2 move gamestate@(player, Board s1 h1 s2 h2) =
+    let validHoles = if move >= 7 then h2 else h1
+        held = head [ beans | (loc,beans) <- validHoles, loc == move ]
+    in  if isValid move gamestate 
+        then moveBeans2 move held True gamestate
+        else gamestate
 
 -- if the move is not valid, don't make the move, i.e. return the original game state but keep the same player
 -- we're thinking about changing the type of makeMove so it returns a GameState, not a Maybe GameState; need to ask Fogarty
