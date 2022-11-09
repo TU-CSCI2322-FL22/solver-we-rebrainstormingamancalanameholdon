@@ -131,13 +131,13 @@ dropInSide start held holes =
 droppedInEmpty :: Move -> Int -> [Hole] -> Bool
 droppedInEmpty move held holes = 
     let moveIndex = if move<7 then move else move-6
-        (leftOf1,((loc,beans):rightOf)) = splitAt (moveIndex+held-1) holes
+        (leftOf1,((loc,beans):rightOf)) = traceShowId $ splitAt (moveIndex+held-2) holes
     in  beans == 1
 
 checkOppHole :: Move -> Int -> [Hole] -> Bool
 checkOppHole move held holes = 
     let moveIndex = if move<7 then move else move-6
-        (leftOf2,((loc,beans):rightOf)) = splitAt (5-(moveIndex+held-1)) holes
+        (leftOf2,((loc,beans):rightOf)) = traceShowId $ splitAt (5-(moveIndex+held-2)) holes
     in  beans /= 0
 
 dropBeans :: Move -> Int -> GameState -> GameState
@@ -148,13 +148,13 @@ dropBeans move held gamestate@(player, Board s1 h1 s2 h2) =
         newGameState = updatePlayerSide gamestate newSide
     in  case leftOver of 
         0 -> if (droppedInEmpty move held newSide) && (checkOppHole move held holesOpp)
-             then let (leftOfP,((locP,beansP):rightOfP)) = splitAt (move+held-1) newSide
+             then let (leftOfP,((locP,beansP):rightOfP)) = splitAt (move+held-2) newSide
                       newPlayerHoles = leftOfP ++ [(locP,0)] ++ rightOfP
                       newPlayerSide = updatePlayerSide newGameState newPlayerHoles
-                      (leftOfO,((locO,beansO):rightOfO)) = splitAt (5-(move+held-1)) holesOpp
+                      (leftOfO,((locO,beansO):rightOfO)) = splitAt (5-(move+held-2)) holesOpp
                       newOppHoles = leftOfO ++ [(locO,0)] ++ rightOfO
                       newOppSide = updateOppSide newPlayerSide newOppHoles
-                  in switchTurn (updatePlayerStore newOppSide (store+beansP+beansO))
+                  in (updatePlayerStore newOppSide (store+beansP+beansO))
              else switchTurn newGameState
         1 -> updatePlayerStore newGameState (store+1)
         x -> let newNewGameState = updatePlayerStore newGameState (store+1) 
