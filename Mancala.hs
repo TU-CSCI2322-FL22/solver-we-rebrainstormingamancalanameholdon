@@ -127,6 +127,16 @@ dropInSide start held holes =
         (dropIn, noDropIn) = (take held rightOf, drop held rightOf)
     in  (held-(length dropIn), leftOf ++ [(loc,beans+1) | (loc,beans) <- dropIn] ++ noDropIn)
 
+droppedInEmpty :: Move -> Int -> [Hole] -> Bool
+droppedInEmpty move held holes = 
+    let (leftOf,((loc,beans):rightOf)) = splitAt (move+held-1) holes
+    in  beans == 1
+
+checkOppHole :: Move -> Int -> [Hole] -> Bool
+checkOppHole move held holes = 
+    let (leftOf,((loc,beans):rightOf)) = splitAt (5-(move+held-1)) holes
+    in  beans /= 0
+
 dropBeans :: Move -> Int -> GameState -> GameState
 dropBeans move held gamestate@(player, Board s1 h1 s2 h2) = 
     let (holes, store) = getPlayerSide gamestate
@@ -150,8 +160,9 @@ giveBeans held gamestate@(player, Board s1 h1 s2 h2) =
 makeMove :: Move -> GameState -> Maybe GameState
 makeMove move gamestate@(player, Board s1 h1 s2 h2)
     | isValid move gamestate = 
-          let (held, newGameState) = takeBeans move gamestate
-          in  Just (dropBeans (move+1) held newGameState)
+          let loc = if move >=7 && move <= 11 then move-6 else move
+              (held, newGameState) = takeBeans move gamestate
+          in  Just (dropBeans (loc+1) held newGameState)
     | otherwise = Nothing
 
 -- getWinner is a function that should take in a board or game state and use that board or game
