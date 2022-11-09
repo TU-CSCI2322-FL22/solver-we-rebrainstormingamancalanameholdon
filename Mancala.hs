@@ -127,7 +127,8 @@ showGame state@(turn, Board s1 h1 s2 h2) =
                 spaces = if (snd x) > 9 then "  " else "   "
             in case y of [x] -> (show (fst x)) ++ spaces
                          (x:xs) -> concat [labelsToStr xs, show (fst x), spaces]
-        newH2 = concat ["    12  11  10  9   8   7\n", (show s2), " | ",  (holesToStr h2)] -- "    12   11   10   9   8   7\n"
+        spaces = if s2 > 9 then "" else "  "
+        newH2 = concat ["    12  11  10  9   8   7\n", (show s2), spaces, "| ",  (holesToStr h2)] -- "    12   11   10   9   8   7\n"
         newH1 = concat [(holesToStr (reverse h1)), " | ", (show s1), "\n", "  ", "  1   2   3   4   5   6\n"] --reverse (labelsToStr h1)] -- "    1   2   3   4  5   6\n"
         turnStr = case turn of  Player1 -> "Player 1"
                                 Player2 -> "Player 2"
@@ -147,4 +148,4 @@ showGame state@(turn, Board s1 h1 s2 h2) =
 -- What will happen if there is a draw?
 -- What will happen if a move is invalid?
 -- Others...?
--- STEALS
+-- STEALSIn the State Managers worksheet, insert the TEXTJOIN function in cell D2 to use a space as the delimiter to join the text in the range A2:C2. Set the Ignore_empty argument to TRUE. 
