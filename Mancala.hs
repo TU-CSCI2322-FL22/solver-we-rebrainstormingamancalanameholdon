@@ -110,19 +110,25 @@ getOutcome (player, board)
 
 -- Jeremy and David:
 showGame :: GameState -> String
-showGame state@(turn, board) = 
+showGame state@(turn, Board s1 h1 s2 h2) = 
     let
-        s1 = store1 board
-        s2 = store2 board
-        h1 = holes1 board
-        h2 = holes2 board
-
         holesToStr :: [Hole] -> String
-        holesToStr [x] = (show (snd x)) ++ "  "
-        holesToStr (x:xs) = concat [holesToStr xs,show (snd x), "  "]
+        -- holesToStr [x] = (show (snd x)) ++ "   "
+        -- holesToStr (x:xs) = concat [holesToStr xs,show (snd x), "   "]
+        holesToStr y@(x:xs) =
+            let
+                spaces = if (snd x) > 9 then "  " else "   "
+            in case y of [x] -> (show (snd x)) ++ spaces
+                         (x:xs) -> concat [holesToStr xs,show (snd x), spaces]
 
-        newH1 = concat ["     1  2  3  4  5  6\n", (show s1), " |", (reverse (holesToStr h1))]
-        newH2 = concat [(holesToStr h2), "| ", (show s2), "\n", "     12 11 10 9  8  7\n"]
+        labelsToStr :: [Hole] -> String
+        labelsToStr y @(x:xs) =
+            let
+                spaces = if (snd x) > 9 then "  " else "   "
+            in case y of [x] -> (show (fst x)) ++ spaces
+                         (x:xs) -> concat [labelsToStr xs, show (fst x), spaces]
+        newH2 = concat ["    12  11  10  9   8   7\n", (show s2), " | ",  (holesToStr h2)] -- "    12   11   10   9   8   7\n"
+        newH1 = concat [(holesToStr (reverse h1)), " | ", (show s1), "\n", "  ", "  1   2   3   4   5   6\n"] --reverse (labelsToStr h1)] -- "    1   2   3   4  5   6\n"
         turnStr = case turn of  Player1 -> "Player 1"
                                 Player2 -> "Player 2"
         outcome = case getOutcome state of  Win Player1 -> "Player 1 won!"
@@ -130,7 +136,7 @@ showGame state@(turn, board) =
                                             Tie -> "It's a tie!"
                                             NotOver -> "Game in progress. It is " ++ turnStr ++ "'s turn."
 
-    in concat ["\n", outcome, "\n", newH1, "\n     ", newH2]
+    in concat ["\n", outcome, "\n", newH2, "\n    ", newH1]
  
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
