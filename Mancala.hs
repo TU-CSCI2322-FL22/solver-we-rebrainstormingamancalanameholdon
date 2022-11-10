@@ -1,3 +1,6 @@
+import Data.List
+import Data.Maybe
+import Debug.Trace
 
 -- Board Representation Aliases
 --
@@ -13,7 +16,7 @@ data Board = Board { store1 :: Store,
                      store2 :: Store,
                      holes2 :: [Hole] } deriving (Show) 
                     
-data Player = Player1 | Player2 deriving Show -- NOTE: GameOver may ultimately be unnecessary
+data Player = Player1 | Player2 deriving (Show, Eq) -- NOTE: GameOver may ultimately be unnecessary
 
 data Outcome = Win Player | Tie | NotOver deriving Show
 
@@ -84,8 +87,95 @@ isOver board = emptyHoles (holes1 board) || emptyHoles (holes2 board)
 -- and BE AWARE OF THE POTENTIAL REPERCUSSIONS OF DOING SO.
 
 -- Leanna and Michelle:
+
+getPlayerSide :: GameState -> ([Hole],Store)
+getPlayerSide (player, Board s1 h1 s2 h2) = if player == Player1 then (h1,s1) else (h2,s2)
+
+getOppSide :: GameState -> ([Hole],Store)
+getOppSide (player, Board s1 h1 s2 h2) = if player == Player2 then (h1,s1) else (h2,s2)
+
+updatePlayerSide :: GameState -> [Hole] -> GameState
+updatePlayerSide (player, Board s1 h1 s2 h2) holes 
+    | player == Player1 = (player, Board s1 holes s2 h2)
+    | player == Player2 = (player, Board s1 h1 s2 holes)
+
+updatePlayerStore :: GameState -> Store -> GameState
+updatePlayerStore (player, Board s1 h1 s2 h2) store = if player == Player1
+                                                      then (player, Board store h1 s2 h2)
+                                                      else (player, Board s1 h1 store h2)
+
+updateOppSide :: GameState -> [Hole] -> GameState
+updateOppSide (player, Board s1 h1 s2 h2) holes
+    | player == Player2 = (player, Board s1 holes s2 h2)
+    | player == Player1 = (player, Board s1 h1 s2 holes)
+
+switchTurn :: GameState -> GameState
+switchTurn (player, board) = if player == Player1 then (Player2, board) else (Player1, board)
+
+emptyHole :: Int -> [Hole] -> (Int, [Hole])
+emptyHole index holes = case splitAt index holes of
+                             (leftOf, ((loc,beans):rightOf)) -> (beans, leftOf ++ [(loc,0)] ++ rightOf)
+                             _ -> error ("splitAt not working in emptyHole: " ++ show (splitAt index holes))
+
+takeBeans :: Move -> GameState -> (Int, GameState)
+takeBeans move gamestate@(player, Board s1 h1 s2 h2) = 
+    let (held, newHoles) = if move < 7 then emptyHole (move-1) h1 else emptyHole (move-7) h2
+    in  (held, updatePlayerSide gamestate newHoles) 
+
+dropInSide :: Move -> Int -> [Hole] -> (Int,[Hole])
+dropInSide start held holes =
+    let (leftOf, rightOf) = splitAt (start-1) holes
+        (dropIn, noDropIn) = splitAt held rightOf
+    in  (held-(length dropIn), leftOf ++ [(loc,beans+1) | (loc,beans) <- dropIn] ++ noDropIn)
+
+droppedInEmpty :: Move -> Int -> [Hole] -> Bool
+droppedInEmpty move held holes = 
+    let moveIndex = if move<7 then move else move-6
+    in  case splitAt (moveIndex+held-2) holes of
+             (leftOf,((loc,beans):rightOf)) -> beans == 1
+             _ -> error ("splitAt not working in checkOppHole: " ++ show (splitAt (moveIndex+held-2) holes))
+
+checkOppHole :: Move -> Int -> [Hole] -> Bool
+checkOppHole move held holes = 
+    let moveIndex = if move<7 then move else move-6
+    in  case splitAt (5-(moveIndex+held-2)) holes of
+             (leftOf,((loc,beans):rightOf)) -> beans /= 0
+             _ -> error ("splitAt not working in checkOppHole: " ++ show (splitAt (5-(moveIndex+held-2)) holes))
+
+dropBeans :: Move -> Int -> GameState -> GameState
+dropBeans move held gamestate@(player, Board s1 h1 s2 h2) = 
+    let (holes, store) = getPlayerSide gamestate
+        (holesOpp, storeOpp) = getOppSide gamestate
+        (leftOver, newSide) = dropInSide move held holes
+        newGameState = updatePlayerSide gamestate newSide
+    in  case leftOver of 
+        0 -> if (droppedInEmpty move held newSide) && (checkOppHole move held holesOpp)
+             then let (beansP, newPlayerHoles) = emptyHole (move+held-2) newSide
+                      newPlayerSide = updatePlayerSide newGameState newPlayerHoles
+                      (beansO, newOppHoles) = emptyHole (5-(move+held-2)) holesOpp
+                      newOppSide = updateOppSide newPlayerSide newOppHoles
+                  in  switchTurn (updatePlayerStore newOppSide (store+beansP+beansO))
+             else switchTurn newGameState
+        1 -> updatePlayerStore newGameState (store+1)
+        x -> let newNewGameState = updatePlayerStore newGameState (store+1) 
+             in giveBeans (leftOver-1) newNewGameState
+
+giveBeans :: Int -> GameState -> GameState
+giveBeans held gamestate@(player, Board s1 h1 s2 h2) = 
+    let (holes, store) = getOppSide gamestate
+        (leftOver, newSide) = dropInSide 1 held holes
+        newGameState = updateOppSide gamestate newSide
+    in  case leftOver of
+        0 -> switchTurn newGameState
+        x -> dropBeans 1 leftOver newGameState
+
 makeMove :: Move -> GameState -> Maybe GameState
-makeMove = undefined
+makeMove move gamestate@(player, Board s1 h1 s2 h2)
+    | isValid move gamestate = 
+          let loc = if move >=7 && move <= 11 then move-6 else move
+              (held, newGameState) = takeBeans move gamestate
+          in  Just (dropBeans (loc+1) held newGameState)
+    | otherwise = Nothing
 
 -- getWinner is a function that should take in a board or game state and use that board or game
 -- state to determine the winner of the game. This function should only be successfully called after a game is
@@ -106,20 +196,14 @@ getWinner = undefined
 
 -- Jeremy and David:
 showGame :: GameState -> String
-showGame state@(turn, board) = 
-    let
-        s1 = store1 board
-        s2 = store2 board
-        h1 = holes1 board
-        h2 = holes2 board
-        holesToStr :: [Hole] -> String -> String
+showGame state@(turn, Board s1 h1 s2 h2) = 
+    let holesToStr :: [Hole] -> String -> String
         holesToStr [] acc = acc
-        holesToStr [x] acc = ((show (snd x)) ++ "  " ++ acc)
-        holesToStr holes@(x:xs) acc = holesToStr xs ((show (snd x)) ++ "  " ++ acc)
-        newH1 = "     1  2  3  4  5  6\n" ++ (show s1) ++ " |" ++ (reverse (holesToStr h1 []))
-        newH2 = (holesToStr h2 []) ++ "| " ++ (show s2) ++ "\n" ++ "     12 11 10 9  8  7\n"
-    in concat [newH1, "\n     ", newH2]
- 
+        holesToStr [x] acc = (acc ++ "  " ++ (show (snd x)))
+        holesToStr holes@(x:xs) acc = holesToStr xs (acc ++ "  " ++ (show (snd x)))
+        newH2 = "    12 11 10 9  8  7\n" ++ (show s2) ++ " | " ++ (reverse (holesToStr h2 []))
+        newH1 = (holesToStr h1 []) ++ " | " ++ (show s1) ++ "\n" ++ "    1  2  3  4  5  6"
+    in concat [newH2, "\n  ", newH1]
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
 -- possible errors or edge cases. We will likely need to use Maybe and Either. Note that this WILL
