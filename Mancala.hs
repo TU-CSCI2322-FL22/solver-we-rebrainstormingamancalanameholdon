@@ -154,7 +154,7 @@ dropBeans move held gamestate@(player, Board s1 h1 s2 h2) =
                       (leftOfO,((locO,beansO):rightOfO)) = splitAt (5-(move+held-2)) holesOpp
                       newOppHoles = leftOfO ++ [(locO,0)] ++ rightOfO
                       newOppSide = updateOppSide newPlayerSide newOppHoles
-                  in (updatePlayerStore newOppSide (store+beansP+beansO))
+                  in switchTurn (updatePlayerStore newOppSide (store+beansP+beansO))
              else switchTurn newGameState
         1 -> updatePlayerStore newGameState (store+1)
         x -> let newNewGameState = updatePlayerStore newGameState (store+1) 
