@@ -33,6 +33,10 @@ type Move = Int -- NOTE: this alias is currently subject to change
 startState :: GameState
 startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8,4),(9,4),(10,4),(11,4),(12,4)])
 
+loadedboard = (Player1, Board 22 [(1,11),(2,11),(3,11),(4,11),(5,11),(6,11)] 22 [(7,22),(8,22),(9,22),(10,22),(11,22),(12,22)])
+deadboard = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,0),(6,0)] 0 [(7,2000000),(8,0),(9,0),(10,0),(11,0),(12,0)])
+identityboard = (Player1, Board 22 [(1,1),(2,2),(3,3),(4,4),(5,5),(6,6)] 22 [(7,7),(8,8),(9,9),(10,10),(11,11),(12,12)])
+
 -- Function Stubs
 --
 
@@ -109,35 +113,30 @@ getOutcome (player, board)
 
 
 -- Jeremy and David:
+showOutcome :: GameState -> String
+showOutcome state@(turn, Board x y z a) = 
+    let turnStr = case turn of  Player1 -> "Player 1"
+                                Player2 -> "Player 2"
+    in case getOutcome state of Win Player1 -> "Player 1 won!"
+                                Win Player2 -> "Player 2 won!"
+                                Tie -> "It's a tie!"
+                                NotOver -> "Game in progress. It is " ++ turnStr ++ "'s turn."
+
+
+
 showGame :: GameState -> String
 showGame state@(turn, Board s1 h1 s2 h2) = 
-    let
-        holesToStr :: [Hole] -> String
-        -- holesToStr [x] = (show (snd x)) ++ "   "
-        -- holesToStr (x:xs) = concat [holesToStr xs,show (snd x), "   "]
-        holesToStr y@(x:xs) =
-            let
-                spaces = if (snd x) > 9 then "  " else "   "
+    let showHoles y@(x:xs) =
+            let spaces = if (snd x) > 9 then "  " else "   "
+            --in concat (map (\x -> show (snd x) ++ spaces) y)
             in case y of [x] -> (show (snd x)) ++ spaces
-                         (x:xs) -> concat [holesToStr xs,show (snd x), spaces]
+                         (x:xs) -> concat [showHoles xs,show (snd x), spaces]
+        spaces = if s1 > 9 then " " else "  "
+        newH2 = concat ["    12  11  10  9   8   7\n", (show s2), spaces, "|",  (showHoles h2)] 
+        newH1 = concat ["    ", (showHoles (reverse h1)), "| ", (show s1), "\n", "  ", "  1   2   3   4   5   6\n"] 
 
-        labelsToStr :: [Hole] -> String
-        labelsToStr y @(x:xs) =
-            let
-                spaces = if (snd x) > 9 then "  " else "   "
-            in case y of [x] -> (show (fst x)) ++ spaces
-                         (x:xs) -> concat [labelsToStr xs, show (fst x), spaces]
-        spaces = if s2 > 9 then "" else "  "
-        newH2 = concat ["    12  11  10  9   8   7\n", (show s2), spaces, "| ",  (holesToStr h2)] -- "    12   11   10   9   8   7\n"
-        newH1 = concat [(holesToStr (reverse h1)), " | ", (show s1), "\n", "  ", "  1   2   3   4   5   6\n"] --reverse (labelsToStr h1)] -- "    1   2   3   4  5   6\n"
-        turnStr = case turn of  Player1 -> "Player 1"
-                                Player2 -> "Player 2"
-        outcome = case getOutcome state of  Win Player1 -> "Player 1 won!"
-                                            Win Player2 -> "Player 2 won!"
-                                            Tie -> "It's a tie!"
-                                            NotOver -> "Game in progress. It is " ++ turnStr ++ "'s turn."
-
-    in concat ["\n", outcome, "\n", newH2, "\n    ", newH1]
+    in unlines [showOutcome state, newH2, newH1]
+    --in concat ["\n", outcome, "\n", newH2, "\n    ", newH1]
  
 
 -- FULL CREDIT: We need to change these functions (including their type signatures, as necessary) to consider ALL
