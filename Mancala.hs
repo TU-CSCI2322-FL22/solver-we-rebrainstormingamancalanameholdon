@@ -216,15 +216,10 @@ showOutcome state@(turn, Board x y z a) =
 
 showGame :: GameState -> String
 showGame state@(turn, Board s1 h1 s2 h2) = 
-    let showHoles y@(x:xs) =
-            let spaces = if (snd x) > 9 then "  " else "   "
-            --in concat (map (\x -> show (snd x) ++ spaces) y)
-            in case y of [x] -> (show (snd x)) ++ spaces
-                         (x:xs) -> concat [showHoles xs,show (snd x), spaces]
+    let showHoles y@(x:xs) = concat (map (\x -> show (snd x) ++ if (snd x) > 9 then "  " else "   ") y)
         spaces = if s1 > 9 then " " else "  "
-        newH2 = concat ["    12  11  10  9   8   7\n", (show s2), spaces, "|",  (showHoles h2)] 
-        newH1 = concat ["    ", (showHoles (reverse h1)), "| ", (show s1), "\n", "  ", "  1   2   3   4   5   6\n"] 
-
+        newH2 = concat ["      12  11  10  9   8   7\n", (show s2), spaces, "|","  ",  (showHoles (reverse h2))] 
+        newH1 = concat ["      ", (showHoles (h1)), "| ", (show s1), "\n", "      1   2   3   4   5   6"] 
     in unlines [showOutcome state, newH2, newH1]
     --in concat ["\n", outcome, "\n", newH2, "\n    ", newH1]
 
