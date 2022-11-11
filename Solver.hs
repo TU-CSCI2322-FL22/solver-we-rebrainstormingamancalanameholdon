@@ -1,5 +1,6 @@
--- module Solver where
+module Solver where
 
+import Mancala
 -- module things
 --
 --
@@ -20,9 +21,18 @@
 --
 -- write a "who will win" function
 -- Possible type:
--- whoWillWin :: GameState -> Outcome
+whoWillWin :: GameState -> Outcome
+whoWillWin gs = 
+    case getOutcome gs of
+        Nothing -> whoWillWin gs
+        Just winner -> winner
+
+
 --
 -- write a "best move"
 -- Possible type:
 -- bestMove :: GameState -> Move
+
+
+
 

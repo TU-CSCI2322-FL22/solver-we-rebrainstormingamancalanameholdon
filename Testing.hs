@@ -1,4 +1,6 @@
--- module Testing where
+import Mancala
+import Solver
+
 
 -- module stuff
 --
