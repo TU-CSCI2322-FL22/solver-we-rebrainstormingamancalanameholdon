@@ -1,5 +1,11 @@
--- module Main where
+module Main where
 
+import Mancala
+import Solver
+
+main :: IO ()
+main = do 
+    putStrLn "Hello, world!"
 -- module things
 
 -- read states from a file

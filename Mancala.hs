@@ -1,4 +1,5 @@
---module Mancala where
+module Mancala where
+    
 import Data.List
 import Data.Maybe
 import Debug.Trace
@@ -19,7 +20,7 @@ data Board = Board { store1 :: Store,
                     
 data Player = Player1 | Player2 deriving (Show, Eq) -- NOTE: GameOver may ultimately be unnecessary
 
-data Outcome = Win Player | Tie | NotOver deriving Show
+data Outcome = Win Player | Tie deriving Show
 
 -- Gamestate and Gameplay (i.e., Move, ...) Aliases
 --
@@ -188,12 +189,12 @@ makeMove move gamestate@(player, Board s1 h1 s2 h2)
 -- commented out signatures below.
 
 -- Leanna and Michelle:
-getOutcome :: GameState -> Outcome
+getOutcome :: GameState -> Maybe Outcome
 getOutcome (player, board)
-    | not (isOver board) = NotOver
-    | store1 board == store2 board = Tie
-    | store1 board > store2 board = Win Player1
-    | store1 board < store2 board = Win Player2
+    | not (isOver board) = Nothing
+    | store1 board == store2 board = Just Tie
+    | store1 board > store2 board = Just (Win Player1)
+    | store1 board < store2 board = Just (Win Player2)
 
 -- showGame is a function that should take a game state and return somethat that will show all the information that a user
 -- might want to see in a legible way (i.e., a list of strings with the current turn, the number of
@@ -208,10 +209,10 @@ showOutcome :: GameState -> String
 showOutcome state@(turn, Board x y z a) = 
     let turnStr = case turn of  Player1 -> "Player 1"
                                 Player2 -> "Player 2"
-    in case getOutcome state of Win Player1 -> "Player 1 won!"
-                                Win Player2 -> "Player 2 won!"
-                                Tie -> "It's a tie!"
-                                NotOver -> "Game in progress. It is " ++ turnStr ++ "'s turn."
+    in case getOutcome state of Just (Win Player1) -> "Player 1 won!"
+                                Just (Win Player2) -> "Player 2 won!"
+                                Just Tie -> "It's a tie!"
+                                Nothing -> "Game in progress. It is " ++ turnStr ++ "'s turn."
 
 
 
