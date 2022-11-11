@@ -1,3 +1,5 @@
+-- module Main where
+
 -- module things
 
 -- read states from a file
@@ -7,13 +9,25 @@
 -- compute the winning move
 --
 -- print the winning move
+--
+--
+-- readGame :: String -> GameState
 
+-- showGame :: GameState -> String
+-- import from Mancala module
 
--- readgame :: String -> Game
--- showGame :: Game -> String
 -- writeGame :: Game -> FilePath -> IO ()
--- loadGame :: FilePath -> IO Game
--- putWinner :: Game -> IO ()
+
+-- loadGame :: FilePath -> IO GameState
+    -- do
+    --     contents <- readFile file
+    --     let data = readGame contents
+    --     putStrLn data
+
+-- putWinner :: GameState -> IO ()
+    -- do
+    --     let winner = whoWillWin game
+    --     putStrLn winner
 --
 --
 --

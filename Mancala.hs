@@ -1,3 +1,4 @@
+--module Mancala where
 import Data.List
 import Data.Maybe
 import Debug.Trace
