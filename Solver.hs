@@ -3,8 +3,6 @@ module Solver where
 import Mancala
 -- module things
 --
---
---
 -- determine optimal move for a player for a game state
 --
 -- search for a move that can force a win for current player
@@ -22,10 +20,38 @@ import Mancala
 -- write a "who will win" function
 -- Possible type:
 whoWillWin :: GameState -> Outcome
-whoWillWin gs = 
+{-whoWillWin gs = 
     case getOutcome gs of
         Nothing -> whoWillWin gs
-        Just winner -> winner
+        Just winner -> winner -}
+whoWillWin gs = 
+    case validMoves gs of 
+        [] -> case getOutcome gs of
+                    Nothing -> error ("Error determining winner given gamestate: " ++ (showGame gs))
+                    Just winner -> winner 
+        [move] -> whoWillWin (checkMove gs move)
+        --(x:xs) -> 
+
+
+findBestGS :: GameState -> [Move] -> GameState
+findBestGS gs@(player, board) moves = undefined
+
+findBestOutcome :: [GameState] -> Outcome
+findBestOutcome states = undefined
+
+--snd (max [ (player Store, gs) | ]) --newGS = (checkMove gs move)
+    {-let newStates = [(if player == Player1 then store1 (snd (checkMove gs move)) else store2 (snd (checkMove gs move)), (checkMove gs move)) | move <- moves]
+        (_,b) = foldr1 (\a b -> if fst a > fst b then a else b) newStates 
+    in  b -}
+
+checkMove :: GameState -> Move -> GameState
+checkMove gs move = 
+    case (makeMove move gs) of
+         Nothing -> error ("Move was invalid: " ++ (show move))
+         Just newGS -> newGS
+
+
+    
 
 
 --

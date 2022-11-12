@@ -39,7 +39,7 @@ startState :: GameState
 startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8,4),(9,4),(10,4),(11,4),(12,4)])
 
 loadedboard = (Player1, Board 22 [(1,11),(2,11),(3,11),(4,11),(5,11),(6,11)] 22 [(7,22),(8,22),(9,22),(10,22),(11,22),(12,22)])
-deadboard = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,0),(6,0)] 0 [(7,2000000),(8,0),(9,0),(10,0),(11,0),(12,0)])
+deadboard = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,0),(6,0)] 0 [(7,2000000),(8,0),(9,0),(10,0),(11,0),(12,1)])
 identityboard = (Player1, Board 22 [(1,1),(2,2),(3,3),(4,4),(5,5),(6,6)] 22 [(7,7),(8,8),(9,9),(10,10),(11,11),(12,12)])
 
 -- Function Stubs
@@ -70,9 +70,8 @@ isValid move state =
 -- Jeremy and David:
 validMoves :: GameState -> [Move]
 validMoves state@(turn, board) = 
-    let
-        moves = case turn of Player1 -> (holes1 board); Player2 -> (holes2 board)
-    in [fst x | x <- moves, (snd x) /= 0]
+    let moves = case turn of Player1 -> (holes1 board); Player2 -> (holes2 board)
+    in if isOver board then [] else [fst x | x <- moves, (snd x) /= 0]
 
 -- isOver is a function that should determine if the game has ended. For a game to be over, the
 -- holes on one side of the board (or the other) should have NO BEANS in them. I recommend that you
