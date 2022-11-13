@@ -19,25 +19,30 @@ import Mancala
 --
 -- write a "who will win" function
 -- Possible type:
+--
+
 whoWillWin :: GameState -> Outcome
-{-whoWillWin gs = 
+whoWillWin gs@(player, board) = 
     case getOutcome gs of
-        Nothing -> whoWillWin gs
-        Just winner -> winner -}
-whoWillWin gs = 
+        Nothing -> findBestOutcome [whoWillWin (checkMove gs move) | move <- (validMoves gs)] player
+        Just winner -> winner
+
+{-whoWillWin gs = 
     case validMoves gs of 
         [] -> case getOutcome gs of
                     Nothing -> error ("Error determining winner given gamestate: " ++ (showGame gs))
                     Just winner -> winner 
         [move] -> whoWillWin (checkMove gs move)
-        --(x:xs) -> 
+        --(x:xs) -> -}
 
+-- findBestGS :: GameState -> [Move] -> GameState
+-- findBestGS gs@(player, board) moves = undefined
 
-findBestGS :: GameState -> [Move] -> GameState
-findBestGS gs@(player, board) moves = undefined
-
-findBestOutcome :: [GameState] -> Outcome
-findBestOutcome states = undefined
+findBestOutcome :: [Outcome] -> Player -> Outcome
+findBestOutcome outcomes player
+    | Win player `elem` outcomes = Win player
+    | Tie `elem` outcomes = Tie
+    | otherwise = Win (if player == Player1 then Player2 else Player1)
 
 --snd (max [ (player Store, gs) | ]) --newGS = (checkMove gs move)
     {-let newStates = [(if player == Player1 then store1 (snd (checkMove gs move)) else store2 (snd (checkMove gs move)), (checkMove gs move)) | move <- moves]

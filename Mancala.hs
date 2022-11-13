@@ -20,7 +20,7 @@ data Board = Board { store1 :: Store,
                     
 data Player = Player1 | Player2 deriving (Show, Eq) -- NOTE: GameOver may ultimately be unnecessary
 
-data Outcome = Win Player | Tie deriving Show
+data Outcome = Win Player | Tie deriving (Show, Eq)
 
 -- Gamestate and Gameplay (i.e., Move, ...) Aliases
 --
@@ -38,9 +38,13 @@ type Move = Int -- NOTE: this alias is currently subject to change
 startState :: GameState
 startState = (Player1, Board 0 [(1,4),(2,4),(3,4),(4,4),(5,4),(6,4)] 0 [(7,4),(8,4),(9,4),(10,4),(11,4),(12,4)])
 
+-- Test states:
 loadedboard = (Player1, Board 22 [(1,11),(2,11),(3,11),(4,11),(5,11),(6,11)] 22 [(7,22),(8,22),(9,22),(10,22),(11,22),(12,22)])
 deadboard = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,0),(6,0)] 0 [(7,2000000),(8,0),(9,0),(10,0),(11,0),(12,1)])
 identityboard = (Player1, Board 22 [(1,1),(2,2),(3,3),(4,4),(5,5),(6,6)] 22 [(7,7),(8,8),(9,9),(10,10),(11,11),(12,12)])
+
+p1board = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,0),(6,1)] 0 [(7,2),(8,0),(9,0),(10,0),(11,0),(12,1)])
+p2board = (Player2, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,1),(6,0)] 0 [(7,0),(8,0),(9,0),(10,0),(11,0),(12,1)])
 
 -- Function Stubs
 --
