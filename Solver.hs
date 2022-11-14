@@ -44,16 +44,27 @@ checkMove gs move =
          Just newGS -> newGS
 
 bestMove :: GameState -> Move
-bestMove gs = undefined
---    let outcomes = [(whoWillWin (checkMove gs move), move) | move <- (validMoves gs)]
---    in ()
+bestMove gs@(player, board) =
+    let outcomes = [(whoWillWin (checkMove gs move), move) | move <- (validMoves gs)]
+    in  case findWinMove outcomes player of
+             Just move -> move
+             Nothing -> case findTieMove outcomes of
+                             Just move -> move
+                             Nothing -> case findOtherMove outcomes of
+                                             Just move -> move
+                                             Nothing -> error ("No valid moves for gs in bestMove: " ++ (show outcomes))
 
 findWinMove :: [(Outcome, Move)] -> Player -> Maybe Move
 findWinMove [] player = Nothing
-findWinMove ((o,m):tups) player = if o == Win player then m else findWinningMove tups
+findWinMove ((o,m):tups) player = if o == Win player then (Just m) else findWinMove tups player
 
-findTieMove :: [(Outcome, Move)] -> Player -> Maybe Move
-findTieMove = undefined
+findTieMove :: [(Outcome, Move)] -> Maybe Move
+findTieMove [] = Nothing
+findTieMove ((o,m):tups) = if o == Tie then (Just m) else findTieMove tups
+
+findOtherMove :: [(Outcome, Move)] -> Maybe Move
+findOtherMove [] = Nothing
+findOtherMove ((o,m):tups) = Just m
 
 
     
