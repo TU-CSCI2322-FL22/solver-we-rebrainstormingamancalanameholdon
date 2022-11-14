@@ -27,33 +27,36 @@ whoWillWin gs@(player, board) =
         Nothing -> findBestOutcome [whoWillWin (checkMove gs move) | move <- (validMoves gs)] player
         Just winner -> winner
 
-{-whoWillWin gs = 
-    case validMoves gs of 
-        [] -> case getOutcome gs of
-                    Nothing -> error ("Error determining winner given gamestate: " ++ (showGame gs))
-                    Just winner -> winner 
-        [move] -> whoWillWin (checkMove gs move)
-        --(x:xs) -> -}
-
 -- findBestGS :: GameState -> [Move] -> GameState
 -- findBestGS gs@(player, board) moves = undefined
-
 findBestOutcome :: [Outcome] -> Player -> Outcome
 findBestOutcome outcomes player
     | Win player `elem` outcomes = Win player
     | Tie `elem` outcomes = Tie
     | otherwise = Win (if player == Player1 then Player2 else Player1)
 
---snd (max [ (player Store, gs) | ]) --newGS = (checkMove gs move)
-    {-let newStates = [(if player == Player1 then store1 (snd (checkMove gs move)) else store2 (snd (checkMove gs move)), (checkMove gs move)) | move <- moves]
-        (_,b) = foldr1 (\a b -> if fst a > fst b then a else b) newStates 
-    in  b -}
+
 
 checkMove :: GameState -> Move -> GameState
 checkMove gs move = 
     case (makeMove move gs) of
          Nothing -> error ("Move was invalid: " ++ (show move))
          Just newGS -> newGS
+
+bestMove :: GameState -> Move
+bestMove gs = undefined
+--    let outcomes = [(whoWillWin (checkMove gs move), move) | move <- (validMoves gs)]
+--    in ()
+
+findWinMove :: [(Outcome, Move)] -> Player -> Maybe Move
+findWinMove [] player = Nothing
+findWinMove ((o,m):tups) player = if o == Win player then m else findWinningMove tups
+
+findTieMove :: [(Outcome, Move)] -> Player -> Maybe Move
+findTieMove = undefined
+
+
+    
 
 
     
