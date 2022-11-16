@@ -21,27 +21,33 @@ main = do
 -- print the winning move
 --
 --
+--Will return nothing if we have an extra space...
+getPlayer :: String -> Maybe Player
+getPlayer "1" = Just Player1
+getPlayer "2" = Just Player2
+getPlayer _ = Nothing
 
-getPlayer :: String -> Player
-getPlayer str =
-    case str of 
-        "1" -> Player1
-        "2" -> Player2
-        -- WILL NEED TO ADD LATER : _ -> Nothing 
-
-getHoles :: String -> [Int] -> [Hole]
+getHoles :: String -> [Int] -> Maybe [Hole]
 getHoles str labels = 
     let stringHoles = splitOn " " str
-        numBeans = map (\stringBeans -> read stringBeans :: Int) stringHoles
-    in  zip labels numBeans
+        filteredHoles = filter (/= "") stringHoles
+        numBeans = map (\stringBeans -> read stringBeans :: Int) filteredHoles
+        posBeans = filter (>= 0) numBeans
+    in  case length posBeans of 
+             6 -> Just $ zip labels posBeans
+             _ -> Nothing
         
 getStore :: String -> Store
 getStore str = (read str :: Store)
 
-readGame :: String -> GameState
+-- Potentially utilize strip/trim on inputs to helper functions and lines.
+{-
+readGame :: String -> Maybe GameState
 readGame inputGS =  
-    let playerLine:s1Line:h1Line:s2Line:h2Line:[] = lines inputGS
-    in  (getPlayer playerLine, Board (getStore s1Line) (getHoles h1Line [1..6]) (getStore s2Line) (getHoles h2Line [7..12]))
+    case lines inputGS of
+        playerLine:s1Line:h1Line:s2Line:h2Line:[] -> Just $ (getPlayer playerLine, Board (getStore s1Line) (getHoles h1Line [1..6]) (getStore s2Line) (getHoles h2Line [7..12]))
+        _ -> Nothing
+-}
 --change to take a list of strings as input for helper functions
 
 uglyShowPlayer :: Player -> String
@@ -65,18 +71,13 @@ uglyShowGame gs@(player, Board s1 h1 s2 h2) =
 writeGame :: GameState -> FilePath -> IO ()
 writeGame gs file = do
     writeFile file (uglyShowGame gs)
-
-loadGame :: FilePath -> IO GameState
+{-
+loadGame :: FilePath -> IO (Maybe GameState)
 loadGame file = do
     contents <- readFile file
     let gs = readGame contents
     return gs
-
-    -- do
-    --     contents <- readFile file
-    --     let data = readGame contents
-    --     putStrLn data
-
+-}
 putWinner :: GameState -> IO ()
 putWinner gs = do
     let winner = whoWillWin gs
@@ -84,3 +85,12 @@ putWinner gs = do
 --
 --
 --
+{-
+Edge cases:
+length holes <  6 -done?
+nums < 0 -probably done for holes, needed for stores
+excess lines?
+if lines are out of order
+fewer than required lines
+extra empty lines
+}
