@@ -43,26 +43,44 @@ readGame inputGS =
     let playerLine:s1Line:h1Line:s2Line:h2Line:[] = lines inputGS
     in  (getPlayer playerLine, Board (getStore s1Line) (getHoles h1Line [1..6]) (getStore s2Line) (getHoles h2Line [7..12]))
 --change to take a list of strings as input for helper functions
-    
-    
-    
 
+uglyShowPlayer :: Player -> String
+uglyShowPlayer Player1 = "1"
+uglyShowPlayer Player2 = "2"
 
---showGame :: GameState -> String
+uglyShowHoles :: [Hole] -> String
+uglyShowHoles holes = concat $ map (\(loc,beans) -> show beans ++ " ") holes
+
+uglyShowGame :: GameState -> String
+uglyShowGame gs@(player, Board s1 h1 s2 h2) =
+    let uglyPlayer = uglyShowPlayer player
+        uglyS1 = show s1
+        uglyH1 = uglyShowHoles h1
+        uglyS2 = show s2
+        uglyH2 = uglyShowHoles h2
+    in  unlines [uglyPlayer,uglyS1,uglyH1,uglyS2,uglyH2]
+
 -- import from Mancala module
 
--- writeGame :: Game -> FilePath -> IO ()
+writeGame :: GameState -> FilePath -> IO ()
+writeGame gs file = do
+    writeFile file (uglyShowGame gs)
 
--- loadGame :: FilePath -> IO GameState
+loadGame :: FilePath -> IO GameState
+loadGame file = do
+    contents <- readFile file
+    let gs = readGame contents
+    return gs
+
     -- do
     --     contents <- readFile file
     --     let data = readGame contents
     --     putStrLn data
 
--- putWinner :: GameState -> IO ()
-    -- do
-    --     let winner = whoWillWin game
-    --     putStrLn winner
+putWinner :: GameState -> IO ()
+putWinner gs = do
+    let winner = whoWillWin gs
+    putStrLn (show winner)
 --
 --
 --
