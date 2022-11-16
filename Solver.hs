@@ -43,16 +43,16 @@ checkMove gs move =
          Nothing -> error ("Move was invalid: " ++ (show move))
          Just newGS -> newGS
 
-bestMove :: GameState -> Move
+bestMove :: GameState -> Maybe Move
 bestMove gs@(player, board) =
     let outcomes = [(whoWillWin (checkMove gs move), move) | move <- (validMoves gs)]
     in  case findWinMove outcomes player of
-             Just move -> move
+             Just move -> Just move
              Nothing -> case findTieMove outcomes of
-                             Just move -> move
+                             Just move -> Just move
                              Nothing -> case findOtherMove outcomes of
-                                             Just move -> move
-                                             Nothing -> error ("No valid moves for gs in bestMove: " ++ (show outcomes))
+                                             Just move -> Just move
+                                             Nothing -> Nothing
 
 findWinMove :: [(Outcome, Move)] -> Player -> Maybe Move
 findWinMove [] player = Nothing
