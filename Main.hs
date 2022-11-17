@@ -62,8 +62,6 @@ readGame inputGS =
                 return (player, Board s1 h1 s2 h2)
              _ -> Nothing
 
--- almost done, but our code doesn't like gay people... will need to use isDigits / readMaybe in
--- helper functions and/or readGame to fix
 
 {-readGame :: String -> Maybe GameState
 readGame inputGS = 
