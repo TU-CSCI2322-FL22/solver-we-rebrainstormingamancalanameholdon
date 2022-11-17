@@ -5,6 +5,8 @@ import Solver
 --import Data.List.Split
 import Data.List.Extra
 import Data.Maybe
+import Text.Read
+import Data.Char
 
 main :: IO ()
 main = do
@@ -32,7 +34,7 @@ getPlayer _ = Nothing
 getHoles :: String -> [Int] -> Maybe [Hole]
 getHoles str labels = 
     let stringHoles = splitOn " " str
-        filteredHoles = filter (/= "") stringHoles
+        filteredHoles = filter (\hole -> hole /= "" && all (isDigit) hole) stringHoles
         numBeans = map (\stringBeans -> read stringBeans :: Int) filteredHoles
         posBeans = filter (>= 0) numBeans
     in  case length posBeans of 
@@ -41,23 +43,24 @@ getHoles str labels =
         
 getStore :: String -> Maybe Store
 getStore str =
-    let store = (read str :: Store)
-    in  if store >= 0
-        then Just store
+    let store = (readMaybe str :: Maybe Int)
+    in  if store /= Nothing && store >= Just 0
+        then store
         else Nothing
 
 -- Potentially utilize strip/trim on inputs to helper functions and lines.
 readGame :: String -> Maybe GameState
-readGame inputGS = 
-    case lines inputGS of
-         playerLine:s1Line:h1Line:s2Line:h2Line:[] -> do
-            player <- getPlayer playerLine
-            s1 <- getStore s1Line
-            h1 <- getHoles h1Line [1..6]
-            s2 <- getStore s2Line
-            h2 <- getHoles h2Line [7..12]
-            return (player, Board s1 h1 s2 h2)
-         _ -> Nothing
+readGame inputGS =
+    let newInputGS = trim inputGS 
+    in  case lines newInputGS of
+             playerLine:s1Line:h1Line:s2Line:h2Line:[] -> do
+                player <- getPlayer (trim playerLine)
+                s1 <- getStore s1Line
+                h1 <- getHoles h1Line [1..6]
+                s2 <- getStore s2Line
+                h2 <- getHoles h2Line [7..12]
+                return (player, Board s1 h1 s2 h2)
+             _ -> Nothing
 
 -- almost done, but our code doesn't like gay people... will need to use isDigits / readMaybe in
 -- helper functions and/or readGame to fix
