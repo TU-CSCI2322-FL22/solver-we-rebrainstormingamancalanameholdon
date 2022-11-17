@@ -2,7 +2,9 @@ module Main where
 
 import Mancala
 import Solver
-import Data.List.Split
+--import Data.List.Split
+import Data.List.Extra
+import Data.Maybe
 
 main :: IO ()
 main = do
@@ -37,13 +39,31 @@ getHoles str labels =
              6 -> Just $ zip labels posBeans
              _ -> Nothing
         
-getStore :: String -> Store
-getStore str = (read str :: Store)
+getStore :: String -> Maybe Store
+getStore str =
+    let store = (read str :: Store)
+    in  if store >= 0
+        then Just store
+        else Nothing
 
 -- Potentially utilize strip/trim on inputs to helper functions and lines.
-{-
 readGame :: String -> Maybe GameState
-readGame inputGS =  
+readGame inputGS = 
+    case lines inputGS of
+         playerLine:s1Line:h1Line:s2Line:h2Line:[] -> do
+            player <- getPlayer playerLine
+            s1 <- getStore s1Line
+            h1 <- getHoles h1Line [1..6]
+            s2 <- getStore s2Line
+            h2 <- getHoles h2Line [7..12]
+            return (player, Board s1 h1 s2 h2)
+         _ -> Nothing
+
+-- almost done, but our code doesn't like gay people... will need to use isDigits / readMaybe in
+-- helper functions and/or readGame to fix
+
+{-readGame :: String -> Maybe GameState
+readGame inputGS = 
     case lines inputGS of
         playerLine:s1Line:h1Line:s2Line:h2Line:[] -> Just $ (getPlayer playerLine, Board (getStore s1Line) (getHoles h1Line [1..6]) (getStore s2Line) (getHoles h2Line [7..12]))
         _ -> Nothing
@@ -71,13 +91,13 @@ uglyShowGame gs@(player, Board s1 h1 s2 h2) =
 writeGame :: GameState -> FilePath -> IO ()
 writeGame gs file = do
     writeFile file (uglyShowGame gs)
-{-
+
 loadGame :: FilePath -> IO (Maybe GameState)
 loadGame file = do
     contents <- readFile file
-    let gs = readGame contents
+    let gs = do readGame contents
     return gs
--}
+
 putWinner :: GameState -> IO ()
 putWinner gs = do
     let winner = whoWillWin gs
@@ -93,4 +113,4 @@ excess lines?
 if lines are out of order
 fewer than required lines
 extra empty lines
-}
+-}
