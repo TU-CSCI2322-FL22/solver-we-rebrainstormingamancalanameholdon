@@ -8,23 +8,31 @@ import Data.Maybe
 import Text.Read
 import Data.Char
 
+-- Note that we could add a 25-bean win condition to isOver to optimize?
+
+-- Milestone 3: 
+-- 1) write main that returns best move a player can make given a gs
+-- 2) write a function that returns an integer value that tells you who is doing better (positive
+-- values for player 1, negative values for player 2) given a gs
+
+-- be wary of weights
+
+-- other function ideas: (gamestate status ideas)
+-- 
+-- -> add/subtract (depending on side) the number of holes that will end on your side, if you make
+-- that move
+-- -> store 1 - store 2
+--
+
 main :: IO ()
 main = do
     putStrLn "Hello, World!"
-    --readGame "1\n0\n4 4 4 4 4 4\n0\n4 4 4 4 4 4"
+    -- take in filename
+    -- read contents of file
+    -- turn contents into a gamestate
+    -- call bestMove if we have a valid input gamestate (in-progress, not nothing)
+    -- print out the result of bestMove to stdout
 
-
--- module things
-
--- read states from a file
---
--- write game states to a file
---
--- compute the winning move
---
--- print the winning move
---
---
 --Will return nothing if we have an extra space...
 getPlayer :: String -> Maybe Player
 getPlayer "1" = Just Player1
@@ -48,7 +56,6 @@ getStore str =
         then store
         else Nothing
 
--- Potentially utilize strip/trim on inputs to helper functions and lines.
 readGame :: String -> Maybe GameState
 readGame inputGS =
     let newInputGS = trim inputGS 
@@ -61,15 +68,6 @@ readGame inputGS =
                 h2 <- getHoles h2Line [7..12]
                 return (player, Board s1 h1 s2 h2)
              _ -> Nothing
-
-
-{-readGame :: String -> Maybe GameState
-readGame inputGS = 
-    case lines inputGS of
-        playerLine:s1Line:h1Line:s2Line:h2Line:[] -> Just $ (getPlayer playerLine, Board (getStore s1Line) (getHoles h1Line [1..6]) (getStore s2Line) (getHoles h2Line [7..12]))
-        _ -> Nothing
--}
---change to take a list of strings as input for helper functions
 
 uglyShowPlayer :: Player -> String
 uglyShowPlayer Player1 = "1"
@@ -87,8 +85,6 @@ uglyShowGame gs@(player, Board s1 h1 s2 h2) =
         uglyH2 = uglyShowHoles h2
     in  unlines [uglyPlayer,uglyS1,uglyH1,uglyS2,uglyH2]
 
--- import from Mancala module
-
 writeGame :: GameState -> FilePath -> IO ()
 writeGame gs file = do
     writeFile file (uglyShowGame gs)
@@ -103,15 +99,4 @@ putWinner :: GameState -> IO ()
 putWinner gs = do
     let winner = whoWillWin gs
     putStrLn (show winner)
---
---
---
-{-
-Edge cases:
-length holes <  6 -done?
-nums < 0 -probably done for holes, needed for stores
-excess lines?
-if lines are out of order
-fewer than required lines
-extra empty lines
--}
+
