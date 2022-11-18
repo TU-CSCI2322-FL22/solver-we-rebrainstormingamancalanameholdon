@@ -1,20 +1,21 @@
-import Mancala
+module Testing where
+
 import Solver
+import Mancala
+
+-- Test states:
+loadedboard = (Player1, Board 22 [(1,11),(2,11),(3,11),(4,11),(5,11),(6,11)] 22 [(7,22),(8,22),(9,22),(10,22),(11,22),(12,22)])
+deadboard = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,0),(6,0)] 0 [(7,2000000),(8,0),(9,0),(10,0),(11,0),(12,1)])
+identityboard = (Player1, Board 22 [(1,1),(2,2),(3,3),(4,4),(5,5),(6,6)] 22 [(7,7),(8,8),(9,9),(10,10),(11,11),(12,12)])
+
+p1board = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,0),(6,1)] 0 [(7,2),(8,0),(9,0),(10,0),(11,0),(12,1)])
+p2board = (Player2, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,1),(6,0)] 0 [(7,0),(8,0),(9,0),(10,0),(11,0),(12,1)])
 
 
--- module stuff
---
--- for IO:
---
--- test against a lot of strings and game states
--- test against different filepaths???
---
---
--- for solver:
---
--- test who has won / who will win on many game states, both in progress and over gamestates
--- try states with multiple different potential best moves
--- try states with moves of potentially conflicting precedence (i.e., the first move you look at
--- might be a good one, but perhaps not as good as another move you have not looked at yet)
+whatever = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,1),(6,0)] 0 [(7,0),(8,0),(9,0),(10,0),(11,1),(12,0)])
+
+whatever2 = (Player2, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,1),(6,0)] 0 [(7,0),(8,0),(9,0),(10,0),(11,1),(12,0)])
 
 
+
+whatever3 = (Player1, Board 0 [(1,0),(2,0),(3,0),(4,0),(5,1),(6,0)] 0 [(7,0),(8,0),(9,0),(10,0),(11,0),(12,1)])
