@@ -66,6 +66,13 @@ findOtherMove :: [(Outcome, Move)] -> Maybe Move
 findOtherMove [] = Nothing
 findOtherMove ((o,m):tups) = Just m
 
+evalSide :: Player -> GameState -> Int
+evalSide Player1 gs = undefined --store + bean potential
+
+
+evalGame :: GameState -> Int
+
+
 
     
 
