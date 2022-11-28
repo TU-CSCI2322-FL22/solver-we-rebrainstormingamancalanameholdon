@@ -66,25 +66,35 @@ findOtherMove :: [(Outcome, Move)] -> Maybe Move
 findOtherMove [] = Nothing
 findOtherMove ((o,m):tups) = Just m
 
-evalSide :: Player -> GameState -> Int
-evalSide Player1 gs = undefined --store + bean potential
+evalHoles :: Player -> Move -> [Hole] -> Int
+evalHoles player move [] = 0
+evalHoles Player1 move ((loc,beans):holes)
+    | beans == 0 = evalHoles Player1 (move+1) holes + 1
+    | beans == 7-move = evalHoles Player1 (move+1) holes + beans + 2
+    | beans > 7-move = evalHoles Player1 (move+1) holes + 7 - move
+    | beans < 7-move = evalHoles Player1 (move+1) holes + beans
+evalHoles Player2 move ((loc,beans):holes)
+    | beans == 0 = evalHoles Player2 (move+1) holes + 1
+    | beans == 13-move = evalHoles Player2 (move+1) holes + beans + 2
+    | beans > 13-move = evalHoles Player2 (move+1) holes + 13 - move
+    | beans < 13-move = evalHoles Player2 (move+1) holes + beans
 
+-- fast and dumb!!!
+evalSide :: Player -> GameState -> Int
+-- store + bean potential
+evalSide Player1 (player, Board s1 h1 s2 h2) = s1 + evalHoles Player1 1 h1 + (if player == Player1 then 1 else 0)
+evalSide Player2 (player, Board s1 h1 s2 h2) = s2 + evalHoles Player2 7 h2 + (if player == Player2 then 1 else 0)
 
 evalGame :: GameState -> Int
-
-
-
-    
-
-
-    
-
-
+evalGame gs =
+    case getOutcome gs of
+         Just (Win Player1) -> 999
+         Just (Win Player2) -> -999
+         Just Tie -> 0
+         Nothing -> evalSide Player1 gs - evalSide Player2 gs
+-- add/subtract points depending on whose turn it is currently
 --
 -- write a "best move"
 -- Possible type:
 -- bestMove :: GameState -> Move
-
-
-
 
