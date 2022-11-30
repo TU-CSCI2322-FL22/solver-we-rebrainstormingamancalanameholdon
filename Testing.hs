@@ -2,6 +2,7 @@ module Testing where
 
 import Solver
 import Mancala
+import Data.Maybe
 
 -- Test states:
 loadedboard = (Player1, Board 22 [(1,11),(2,11),(3,11),(4,11),(5,11),(6,11)] 22 [(7,22),(8,22),(9,22),(10,22),(11,22),(12,22)])

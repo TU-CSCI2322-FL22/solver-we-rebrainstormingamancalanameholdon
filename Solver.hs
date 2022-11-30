@@ -35,12 +35,6 @@ findBestOutcome outcomes player
     | Tie `elem` outcomes = Tie
     | otherwise = Win (if player == Player1 then Player2 else Player1)
 
-findGoodOutcome :: [Int] -> Player -> Int
-findGoodOutcome evals Player1 = maximum evals
-findGoodOutcome evals Player2 = minimum evals
-
-
-
 checkMove :: GameState -> Move -> GameState
 checkMove gs move = 
     case (makeMove move gs) of
@@ -98,11 +92,23 @@ evalGame gs =
          Nothing -> evalSide Player1 gs - evalSide Player2 gs
 -- add/subtract points depending on whose turn it is currently
 
+findGoodOutcome :: Player -> ([Int] -> Int)
+findGoodOutcome Player1 = maximum
+findGoodOutcome Player2 = minimum
+
 whoMightWin :: GameState -> Int -> Int
+whoMightWin gs@(player,board) index
+    | index == 0 || isOver board = evalGame gs
+    | otherwise = findGoodOutcome player [whoMightWin (checkMove gs move) (index-1) | move <- validMoves gs] 
+
+findGoodMove :: Player -> [(Int,Int)] -> Move
+findGoodMove Player1 tups = snd $ maximum tups
+findGoodMove Player2 tups = snd $ minimum tups
+
+goodMove :: GameState -> Int -> Move
+goodMove gs@(player, board) index = findGoodMove player [(whoMightWin (checkMove gs move) index, move) | move <- validMoves gs]
+
 {-
-whoMightWin 0 = findGoodOutcome smth
-whoMightWin num = (smth)
-                whoMightWin (num-1)
 --int is depth (how many moves ahead we can look if necesary)
 goodMove :: GameState -> Int -> Move
 -}
