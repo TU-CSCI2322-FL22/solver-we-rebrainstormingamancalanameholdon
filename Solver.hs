@@ -92,21 +92,21 @@ evalGame gs =
          Nothing -> evalSide Player1 gs - evalSide Player2 gs
 -- add/subtract points depending on whose turn it is currently
 
-findGoodOutcome :: Player -> ([Int] -> Int)
+findGoodOutcome :: Player -> [Int] -> Int
 findGoodOutcome Player1 = maximum
 findGoodOutcome Player2 = minimum
 
 whoMightWin :: GameState -> Int -> Int
-whoMightWin gs@(player,board) index
-    | index == 0 || isOver board = evalGame gs
-    | otherwise = findGoodOutcome player [whoMightWin (checkMove gs move) (index-1) | move <- validMoves gs] 
+whoMightWin gs@(player,board) depth
+    | depth == 0 || isOver board = evalGame gs
+    | otherwise = findGoodOutcome player [whoMightWin (checkMove gs move) (depth-1) | move <- validMoves gs] 
 
-findGoodMove :: Player -> [(Int,Int)] -> Move
+findGoodMove :: Player -> [(Int,Move)] -> Move
 findGoodMove Player1 tups = snd $ maximum tups
 findGoodMove Player2 tups = snd $ minimum tups
 
 goodMove :: GameState -> Int -> Move
-goodMove gs@(player, board) index = findGoodMove player [(whoMightWin (checkMove gs move) index, move) | move <- validMoves gs]
+goodMove gs@(player, board) depth = findGoodMove player [(whoMightWin (checkMove gs move) depth, move) | move <- validMoves gs]
 
 {-
 --int is depth (how many moves ahead we can look if necesary)

@@ -2,13 +2,15 @@ module Main where
 
 import Mancala
 import Solver
+import Testing
 --import Data.List.Split
 import Data.List.Extra
 import Data.Maybe
 import Text.Read
 import Data.Char
-
--- Note that we could add a 25-bean win condition to isOver to optimize?
+import System.IO
+import System.Environment
+import System.Console.GetOpt
 
 -- Milestone 3: 
 -- 1) write main that returns best move a player can make given a gs
@@ -24,14 +26,71 @@ import Data.Char
 -- -> store 1 - store 2
 --
 
+data Flag = Winner | Depth String | Help | Move String | Verbose deriving (Eq, Show)
+
+options :: [OptDescr Flag]
+options = [ Option ['w'] ["winner"] (NoArg Winner) "Print out the best move, using an exhaustive search." ,
+            Option ['d'] ["depth"] (ReqArg Depth "<num>") "Use <num> as cutoff depth, instead of the default." ,
+            Option ['h'] ["help"] (NoArg Help) "Print out a help message and quit the program." ,
+            Option ['m'] ["move"] (ReqArg Move "<move>") "Make <move> and see the resulting board." ,
+            Option ['v'] ["verbose"] (NoArg Verbose) "Output both the move and a description of how good it is (win, tie, lose, or rating)." ]
+
 main :: IO ()
 main = do
-    putStrLn "Hello, World!"
+    args <- getArgs
+    let (flags, inputs, error) = getOpt Permute options args
+    if null inputs 
+    then 
+        do putStrLn $ "You must provide a file."
+           printHelp
+    else 
+        do game <- loadGame (head inputs)
+           case game of
+                Nothing -> putStrLn $ "You must provide a file in a valid format."
+                Just gs -> putStrLn $ show $ goodMove gs 4
     -- take in filename
     -- read contents of file
     -- turn contents into a gamestate
     -- call bestMove if we have a valid input gamestate (in-progress, not nothing)
     -- print out the result of bestMove to stdout
+
+handleFlag :: Flag -> IO ()
+handleFlag flag = 
+
+printHelp :: IO ()
+printHelp = putStrLn $ usageInfo "Main [option] [file]" options 
+
+printDepth :: GameState -> Int -> IO ()
+printDepth gs depth = putStrLn $ show $ goodMove gs depth
+
+printWinner :: GameState -> IO ()
+printWinner gs = case bestMove gs of
+                      Nothing -> error "Something went horribly wrong."
+                      Just move -> putStrLn $ show move
+
+printMove :: GameState -> Move -> IO ()
+printMove gs move = do case makeMove move gs of
+                            Nothing -> putStrLn $ "You must provide a valid move."
+                            Just newGS -> putStrLn $ uglyShowGame newGS
+
+printVerbose :: GameState -> Move -> IO ()
+printVerbose gs@(player,board) move = do case makeMove move gs of
+                                              Nothing -> putStrLn $ "You must provide a valid move."
+                                              Just newGS -> putStrLn $ "Move: " ++ (show move) ++ "\nResult: " ++ (evalToOutcome newGS player)
+
+evalToOutcome :: GameState -> Player -> String
+evalToOutcome gs Player1 = case evalGame gs of
+                                999 -> "Win"
+                                -999 -> "Lose"
+                                0 -> if isOver (snd gs) then "Tie" else show 0
+                                x -> show x
+evalToOutcome gs Player2 = case evalGame gs of
+                                999 -> "Lose"
+                                -999 -> "Win"
+                                0 -> if isOver (snd gs) then "Tie" else show 0
+                                x -> show x
+
+
 
 --Will return nothing if we have an extra space...
 getPlayer :: String -> Maybe Player
