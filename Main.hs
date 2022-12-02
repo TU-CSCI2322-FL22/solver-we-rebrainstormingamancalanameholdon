@@ -43,40 +43,55 @@ main = do
     then 
         do putStrLn $ "You must provide a file."
            printHelp
-    else 
-        do game <- loadGame (head inputs)
-           case game of
-                Nothing -> putStrLn $ "You must provide a file in a valid format."
-                Just gs -> putStrLn $ show $ goodMove gs 4
+    else
+        if Help `elem` flags 
+        then printHelp 
+        else
+            do game <- loadGame (head inputs)
+               case game of
+                    Nothing -> putStrLn $ "You must provide a file in a valid format."
+                    Just gs -> chooseAction flags gs
     -- take in filename
     -- read contents of file
     -- turn contents into a gamestate
     -- call bestMove if we have a valid input gamestate (in-progress, not nothing)
     -- print out the result of bestMove to stdout
 
-handleFlag :: Flag -> IO ()
-handleFlag flag = 
+chooseAction :: [Flag] -> GameState -> IO ()
+chooseAction ((Depth n):_) gs = case readMaybe n :: Maybe Int of
+                                     Nothing -> do putStrLn $ "You must provide an integer with the --depth flag."
+                                                   printHelp
+                                     Just num -> printDepth num gs
+chooseAction (Winner:_) gs = printWinner gs
+chooseAction ((Move m):_) gs = case readMaybe m :: Maybe Int of
+                                    Nothing -> do putStrLn $ "You must provide an integer with the --move flag."
+                                                  printHelp
+                                    Just move -> printMove move gs
+chooseAction (Verbose:_) gs = printVerbose gs
+chooseAction [] gs = putStrLn $ "Move: " ++ (show $ goodMove gs 4)
+
 
 printHelp :: IO ()
 printHelp = putStrLn $ usageInfo "Main [option] [file]" options 
 
-printDepth :: GameState -> Int -> IO ()
-printDepth gs depth = putStrLn $ show $ goodMove gs depth
+printDepth :: Int -> GameState -> IO ()
+printDepth depth gs = putStrLn $ show $ goodMove gs depth
 
 printWinner :: GameState -> IO ()
 printWinner gs = case bestMove gs of
                       Nothing -> error "Something went horribly wrong."
                       Just move -> putStrLn $ show move
 
-printMove :: GameState -> Move -> IO ()
-printMove gs move = do case makeMove move gs of
+printMove :: Move -> GameState -> IO ()
+printMove move gs = do case makeMove move gs of
                             Nothing -> putStrLn $ "You must provide a valid move."
                             Just newGS -> putStrLn $ uglyShowGame newGS
 
-printVerbose :: GameState -> Move -> IO ()
-printVerbose gs@(player,board) move = do case makeMove move gs of
-                                              Nothing -> putStrLn $ "You must provide a valid move."
-                                              Just newGS -> putStrLn $ "Move: " ++ (show move) ++ "\nResult: " ++ (evalToOutcome newGS player)
+printVerbose :: GameState -> IO ()
+printVerbose gs@(player,board) = do let move = goodMove gs 4
+                                    case makeMove move gs of
+                                         Nothing -> putStrLn $ "You must provide a valid move."
+                                         Just newGS -> putStrLn $ "Move: " ++ (show move) ++ "\nResult: " ++ (evalToOutcome newGS player)
 
 evalToOutcome :: GameState -> Player -> String
 evalToOutcome gs Player1 = case evalGame gs of

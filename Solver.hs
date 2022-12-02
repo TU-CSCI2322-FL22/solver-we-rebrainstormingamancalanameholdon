@@ -24,7 +24,8 @@ import Mancala
 whoWillWin :: GameState -> Outcome
 whoWillWin gs@(player, board) = 
     case getOutcome gs of
-        Nothing -> findBestOutcome [whoWillWin (checkMove gs move) | move <- (validMoves gs)] player
+        Nothing ->  let newGSs = catMaybe [makeMove gs move | move <- (validMoves gs)]
+                    in findBestOutcome [whoWillWin newGS | newGS <- newGSs] player                        
         Just winner -> winner
 
 -- findBestGS :: GameState -> [Move] -> GameState
@@ -35,11 +36,14 @@ findBestOutcome outcomes player
     | Tie `elem` outcomes = Tie
     | otherwise = Win (if player == Player1 then Player2 else Player1)
 
+-- look for other places we use checkMove and fix?
+-- ask why this is unsafe?
 checkMove :: GameState -> Move -> GameState
 checkMove gs move = 
     case (makeMove move gs) of
          Nothing -> error ("Move was invalid: " ++ (show move))
          Just newGS -> newGS
+
 
 bestMove :: GameState -> Maybe Move
 bestMove gs@(player, board) =
