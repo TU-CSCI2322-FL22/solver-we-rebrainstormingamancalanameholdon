@@ -11,6 +11,7 @@ import Data.Char
 import System.IO
 import System.Environment
 import System.Console.GetOpt
+import Control.Monad (when)
 
 -- Milestone 3: 
 -- 1) write main that returns best move a player can make given a gs
@@ -50,15 +51,44 @@ main = do
             do game <- loadGame (head inputs)
                case game of
                     Nothing -> putStrLn $ "You must provide a file in a valid format."
-                    Just gs -> chooseAction flags gs
+                    Just gs -> let move = chooseAction flags gs
+                               in if Verbose `elem` flags then printVerbose move gs else putStrLn $ "Move: " ++ (show move)
     -- take in filename
     -- read contents of file
     -- turn contents into a gamestate
     -- call bestMove if we have a valid input gamestate (in-progress, not nothing)
     -- print out the result of bestMove to stdout
+chooseAction :: [Flag] -> GameState -> Maybe Move
+chooseAction flags gs =
+    case getMove flags of
+         Nothing -> chooseOtherAction flags gs
+         m -> m
 
-chooseAction :: [Flag] -> GameState -> IO ()
-chooseAction ((Depth n):_) gs = case readMaybe n :: Maybe Int of
+
+chooseOtherAction :: [Flag] -> GameState -> Maybe Move
+chooseOtherAction flags gs 
+    | Winner `elem` flags = bestMove gs
+    | otherwise = goodMove gs (getDepth flags)
+
+
+
+getDepth :: [Flag] -> Int
+getDepth ((Depth n):_) = 
+  case readMaybe n of
+    Nothing -> error "You must provide an integer with the --depth flag." 
+    Just num -> num
+getDepth (_:flags) = getDepth flags
+getDepth [] = 4
+
+getMove :: [Flag] -> Maybe Move
+getMove ((Move m):_) = 
+  case readMaybe m of
+    Nothing -> error "You must provide an integer with the --move flag."
+    Just move -> Just move
+getMove (_:flags) = Just $ getMove flags
+getMove [] = Nothing
+
+{-chooseAction ((Depth n):_) gs = case readMaybe n :: Maybe Int of
                                      Nothing -> do putStrLn $ "You must provide an integer with the --depth flag."
                                                    printHelp
                                      Just num -> printDepth num gs
@@ -69,29 +99,28 @@ chooseAction ((Move m):_) gs = case readMaybe m :: Maybe Int of
                                     Just move -> printMove move gs
 chooseAction (Verbose:_) gs = printVerbose gs
 chooseAction [] gs = putStrLn $ "Move: " ++ (show $ goodMove gs 4)
+-}
 
 
 printHelp :: IO ()
 printHelp = putStrLn $ usageInfo "Main [option] [file]" options 
 
-printDepth :: Int -> GameState -> IO ()
-printDepth depth gs = putStrLn $ show $ goodMove gs depth
+--printDepth :: Int -> GameState -> IO ()
+--printDepth depth gs = putStrLn $ show $ goodMove gs depth
 
-printWinner :: GameState -> IO ()
-printWinner gs = case bestMove gs of
-                      Nothing -> error "Something went horribly wrong."
-                      Just move -> putStrLn $ show move
+--printWinner :: GameState -> Maybe Move
+--printWinner gs = bestMove gs
 
-printMove :: Move -> GameState -> IO ()
-printMove move gs = do case makeMove move gs of
-                            Nothing -> putStrLn $ "You must provide a valid move."
-                            Just newGS -> putStrLn $ uglyShowGame newGS
+--printMove :: Move -> GameState -> IO ()
+--printMove move gs = do case makeMove move gs of
+--                            Nothing -> putStrLn $ "You must provide a valid move."
+--                            Just newGS -> putStrLn $ uglyShowGame newGS
 
-printVerbose :: GameState -> IO ()
-printVerbose gs@(player,board) = do let move = goodMove gs 4
-                                    case makeMove move gs of
-                                         Nothing -> putStrLn $ "You must provide a valid move."
-                                         Just newGS -> putStrLn $ "Move: " ++ (show move) ++ "\nResult: " ++ (evalToOutcome newGS player)
+printVerbose :: Move -> GameState -> IO ()
+printVerbose move gs@(player,board) =
+    case makeMove move gs of
+         Nothing -> putStrLn $ "The game is over or you provided an invalid move."
+         Just newGS -> putStrLn $ "Move: " ++ (show move) ++ "\nResult: " ++ (evalToOutcome newGS player)
 
 evalToOutcome :: GameState -> Player -> String
 evalToOutcome gs Player1 = case evalGame gs of
