@@ -20,12 +20,18 @@ import Mancala
 -- write a "who will win" function
 -- Possible type:
 --
-
+{-
 whoWillWin :: GameState -> Outcome
 whoWillWin gs@(player, board) = 
     case getOutcome gs of
         Nothing ->  let newGSs = catMaybe [makeMove gs move | move <- (validMoves gs)]
                     in findBestOutcome [whoWillWin newGS | newGS <- newGSs] player                        
+        Just winner -> winner
+-}
+whoWillWin :: GameState -> Outcome
+whoWillWin gs@(player, board) = 
+    case getOutcome gs of
+        Nothing -> findBestOutcome [whoWillWin (checkMove gs move) | move <- (validMoves gs)] player
         Just winner -> winner
 
 -- findBestGS :: GameState -> [Move] -> GameState
@@ -109,8 +115,11 @@ findGoodMove :: Player -> [(Int,Move)] -> Move
 findGoodMove Player1 tups = snd $ maximum tups
 findGoodMove Player2 tups = snd $ minimum tups
 
-goodMove :: GameState -> Int -> Move
-goodMove gs@(player, board) depth = findGoodMove player [(whoMightWin (checkMove gs move) depth, move) | move <- validMoves gs]
+goodMove :: GameState -> Int -> Maybe Move
+goodMove gs@(player, board) depth = 
+    case isOver board of 
+        True -> Nothing
+        False -> Just $ findGoodMove player [(whoMightWin (checkMove gs move) depth, move) | move <- validMoves gs]
 
 {-
 --int is depth (how many moves ahead we can look if necesary)
