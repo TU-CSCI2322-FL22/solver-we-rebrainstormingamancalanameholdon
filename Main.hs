@@ -51,8 +51,9 @@ main = do
             do game <- loadGame (head inputs)
                case game of
                     Nothing -> putStrLn $ "You must provide a file in a valid format."
-                    Just gs -> let move = chooseAction flags gs
-                               in if Verbose `elem` flags then printVerbose move gs else putStrLn $ "Move: " ++ (show move)
+                    Just gs -> case chooseAction flags gs of
+                                    Nothing -> putStrLn $ "The game is over or your input was invalid."
+                                    Just m -> if Verbose `elem` flags then printVerbose m gs else putStrLn $ "Move: " ++ (show m)
     -- take in filename
     -- read contents of file
     -- turn contents into a gamestate
@@ -85,7 +86,7 @@ getMove ((Move m):_) =
   case readMaybe m of
     Nothing -> error "You must provide an integer with the --move flag."
     Just move -> Just move
-getMove (_:flags) = Just $ getMove flags
+getMove (_:flags) = getMove flags
 getMove [] = Nothing
 
 {-chooseAction ((Depth n):_) gs = case readMaybe n :: Maybe Int of
