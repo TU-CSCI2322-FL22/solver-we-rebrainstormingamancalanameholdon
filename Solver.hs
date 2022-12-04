@@ -1,6 +1,7 @@
 module Solver where
 
 import Mancala
+import Data.Maybe
 -- module things
 --
 -- determine optimal move for a player for a game state
@@ -20,19 +21,16 @@ import Mancala
 -- write a "who will win" function
 -- Possible type:
 --
-{-
+
 whoWillWin :: GameState -> Outcome
-whoWillWin gs@(player, board) = 
+whoWillWin gs@(player, board) =
     case getOutcome gs of
-        Nothing ->  let newGSs = catMaybe [makeMove gs move | move <- (validMoves gs)]
-                    in findBestOutcome [whoWillWin newGS | newGS <- newGSs] player                        
-        Just winner -> winner
--}
-whoWillWin :: GameState -> Outcome
-whoWillWin gs@(player, board) = 
-    case getOutcome gs of
-        Nothing -> findBestOutcome [whoWillWin (checkMove gs move) | move <- (validMoves gs)] player
-        Just winner -> winner
+         Nothing -> let moves = validMoves gs
+                        maybeStates = [makeMove move gs | move <- moves]
+                        states = catMaybes maybeStates
+                        outcomes = map (whoWillWin) states
+                    in  findBestOutcome outcomes player
+         Just winner -> winner
 
 -- findBestGS :: GameState -> [Move] -> GameState
 -- findBestGS gs@(player, board) moves = undefined
@@ -50,29 +48,27 @@ checkMove gs move =
          Nothing -> error ("Move was invalid: " ++ (show move))
          Just newGS -> newGS
 
+catMaybesTuples :: [(Maybe a, b)] -> [(a,b)]
+catMaybesTuples [] = []
+catMaybesTuples ((Just x,y):tups) = [(x,y)] ++ catMaybesTuples tups
+catMaybesTuples ((Nothing,y):tups) = [] ++ catMaybesTuples tups
 
 bestMove :: GameState -> Maybe Move
 bestMove gs@(player, board) =
-    let outcomes = [(whoWillWin (checkMove gs move), move) | move <- (validMoves gs)]
-    in  case findWinMove outcomes player of
-             Just move -> Just move
-             Nothing -> case findTieMove outcomes of
-                             Just move -> Just move
-                             Nothing -> case findOtherMove outcomes of
-                                             Just move -> Just move
-                                             Nothing -> Nothing
+    let moves = validMoves gs
+        maybeStates = [(makeMove move gs, move) | move <- moves]
+        states = catMaybesTuples maybeStates
+        outcomes = [(whoWillWin o, m) | (o,m) <- states]
+    in  findBestMove outcomes player
 
-findWinMove :: [(Outcome, Move)] -> Player -> Maybe Move
-findWinMove [] player = Nothing
-findWinMove ((o,m):tups) player = if o == Win player then (Just m) else findWinMove tups player
-
-findTieMove :: [(Outcome, Move)] -> Maybe Move
-findTieMove [] = Nothing
-findTieMove ((o,m):tups) = if o == Tie then (Just m) else findTieMove tups
-
-findOtherMove :: [(Outcome, Move)] -> Maybe Move
-findOtherMove [] = Nothing
-findOtherMove ((o,m):tups) = Just m
+findBestMove :: [(Outcome,Move)] -> Player -> Maybe Move
+findBestMove [] player = Nothing
+findBestMove tuples@((o,m):tups) player
+    | win /= Nothing = win
+    | tie /= Nothing = tie
+    | otherwise = Just m
+    where win = lookup (Win player) tuples
+          tie = lookup Tie tuples
 
 evalHoles :: Player -> Move -> [Hole] -> Int
 evalHoles player move [] = 0
@@ -109,7 +105,11 @@ findGoodOutcome Player2 = minimum
 whoMightWin :: GameState -> Int -> Int
 whoMightWin gs@(player,board) depth
     | depth == 0 || isOver board = evalGame gs
-    | otherwise = findGoodOutcome player [whoMightWin (checkMove gs move) (depth-1) | move <- validMoves gs] 
+    | otherwise = let moves = validMoves gs
+                      maybeStates = [makeMove move gs | move <- moves]
+                      states = catMaybes maybeStates
+                      outcomes = map (\s -> whoMightWin s (depth-1)) states
+                  in  findGoodOutcome player outcomes
 
 findGoodMove :: Player -> [(Int,Move)] -> Move
 findGoodMove Player1 tups = snd $ maximum tups
@@ -119,9 +119,10 @@ goodMove :: GameState -> Int -> Maybe Move
 goodMove gs@(player, board) depth = 
     case isOver board of 
         True -> Nothing
-        False -> Just $ findGoodMove player [(whoMightWin (checkMove gs move) depth, move) | move <- validMoves gs]
+        False -> let moves = validMoves gs
+                     maybeStates = [(makeMove move gs, move) | move <- moves]
+                     states = catMaybesTuples maybeStates
+                     outcomes = [(whoMightWin o depth, m) | (o,m) <- states]
+                 in  Just $ findGoodMove player outcomes
+        --Just $ findGoodMove player [(whoMightWin (checkMove gs move) depth, move) | move <- validMoves gs]
 
-{-
---int is depth (how many moves ahead we can look if necesary)
-goodMove :: GameState -> Int -> Move
--}
