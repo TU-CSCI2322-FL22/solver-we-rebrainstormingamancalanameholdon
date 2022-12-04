@@ -51,20 +51,26 @@ main = do
             do game <- loadGame (head inputs)
                case game of
                     Nothing -> putStrLn $ "You must provide a file in a valid format."
-                    Just gs -> case chooseAction flags gs of
-                                    Nothing -> putStrLn $ "The game is over or your input was invalid."
-                                    Just m -> if Verbose `elem` flags then printVerbose m gs else putStrLn $ "Move: " ++ (show m)
+                    Just gs -> case getMove flags of
+                                    Just m -> if Verbose `elem` flags 
+                                              then do printMove m gs
+                                                      printVerbose m gs
+                                              else printMove m gs
+                                    Nothing -> case chooseOtherAction flags gs of
+                                                    Nothing -> putStrLn $ "The game is over or your input was invalid."
+                                                    Just m -> if Verbose `elem` flags then printVerbose m gs else putStrLn $ "Move: " ++ (show m)
     -- take in filename
     -- read contents of file
     -- turn contents into a gamestate
     -- call bestMove if we have a valid input gamestate (in-progress, not nothing)
     -- print out the result of bestMove to stdout
+{-
 chooseAction :: [Flag] -> GameState -> Maybe Move
 chooseAction flags gs =
     case getMove flags of
          Nothing -> chooseOtherAction flags gs
          m -> m
-
+-}
 
 chooseOtherAction :: [Flag] -> GameState -> Maybe Move
 chooseOtherAction flags gs 
@@ -112,10 +118,10 @@ printHelp = putStrLn $ usageInfo "Main [option] [file]" options
 --printWinner :: GameState -> Maybe Move
 --printWinner gs = bestMove gs
 
---printMove :: Move -> GameState -> IO ()
---printMove move gs = do case makeMove move gs of
---                            Nothing -> putStrLn $ "You must provide a valid move."
---                            Just newGS -> putStrLn $ uglyShowGame newGS
+printMove :: Move -> GameState -> IO ()
+printMove move gs = do case makeMove move gs of
+                            Nothing -> putStrLn $ "You must provide a valid move."
+                            Just newGS -> putStrLn $ uglyShowGame newGS
 
 printVerbose :: Move -> GameState -> IO ()
 printVerbose move gs@(player,board) =
