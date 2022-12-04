@@ -40,14 +40,6 @@ findBestOutcome outcomes player
     | Tie `elem` outcomes = Tie
     | otherwise = Win (if player == Player1 then Player2 else Player1)
 
--- look for other places we use checkMove and fix?
--- ask why this is unsafe?
-checkMove :: GameState -> Move -> GameState
-checkMove gs move = 
-    case (makeMove move gs) of
-         Nothing -> error ("Move was invalid: " ++ (show move))
-         Just newGS -> newGS
-
 catMaybesTuples :: [(Maybe a, b)] -> [(a,b)]
 catMaybesTuples [] = []
 catMaybesTuples ((Just x,y):tups) = [(x,y)] ++ catMaybesTuples tups
@@ -124,5 +116,4 @@ goodMove gs@(player, board) depth =
                      states = catMaybesTuples maybeStates
                      outcomes = [(whoMightWin o depth, m) | (o,m) <- states]
                  in  Just $ findGoodMove player outcomes
-        --Just $ findGoodMove player [(whoMightWin (checkMove gs move) depth, move) | move <- validMoves gs]
 
