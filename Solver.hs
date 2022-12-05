@@ -78,8 +78,8 @@ evalHoles Player2 move ((loc,beans):holes)
 -- fast and dumb!!!
 evalSide :: Player -> GameState -> Int
 -- store + bean potential
-evalSide Player1 (player, Board s1 h1 s2 h2) = s1 + evalHoles Player1 1 h1 + (if player == Player1 then 1 else 0)
-evalSide Player2 (player, Board s1 h1 s2 h2) = s2 + evalHoles Player2 7 h2 + (if player == Player2 then 1 else 0)
+evalSide Player1 (player, Board s1 h1 s2 h2) = s1*2 + evalHoles Player1 1 h1 + (if player == Player1 then 1 else 0)
+evalSide Player2 (player, Board s1 h1 s2 h2) = s2*2 + evalHoles Player2 7 h2 + (if player == Player2 then 1 else 0)
 
 evalGame :: GameState -> Int
 evalGame gs =
